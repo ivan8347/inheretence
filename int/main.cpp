@@ -7,6 +7,7 @@ using std::endl;
 
 #define HUMAN_TAKE_PARAMETERS const std::string& last_name, const std::string& first_name, int age
 #define HUMAN_GIVE_PARAMETERS  last_name, first_name, age
+#define HUMAN_OS_PARAMETERS(human)  (human).get_last_name()<< " "<< (human).get_first_name()<<" "<<(human).get_age()
 class Human
 {
 	std::string last_name;
@@ -59,6 +60,7 @@ public:
 
 #define STUDENT_TAKE_PERAMETERS const std::string& speciality, const std::string& group, double rating, double attendance
 #define STUDENT_GIVE_PERAMETERS speciality, group, rating,  attendance
+#define STUDENT_OS_PERAMETERS(student)  (student).get_speciality() << " " << (student).get_group() << " " << (student).get_rating() << " " << (student).get_attendance()
 
 class Student :public Human
 {
@@ -125,7 +127,7 @@ public:
 
 #define TEACHER_TAKE_PARAMETRS const std::string& speciality, int experience
 #define TEACHER_GIVE_PARAMETRS speciality, experience
-
+#define TEACHER_OS_PARAMETRS(teacher)  (teacher).get_speciality()<< " " << (teacher).get_experience()
 
 class Teacher :public Human
 {
@@ -169,10 +171,16 @@ class Teacher :public Human
     cout << speciality << " " << experience << " " << endl;
     }
 };
+
+#define GRADUATE_OS_PARAMETRS(graduate) (graduate).get_subject()
 class Graduate :public Student
 {
 	std::string subject;
 public:
+	const std::string& get_subject()const
+	{
+		return subject;
+	}
 	Graduate(HUMAN_TAKE_PARAMETERS, STUDENT_TAKE_PERAMETERS, const std::string& subject)
 		:Student(HUMAN_GIVE_PARAMETERS, STUDENT_GIVE_PERAMETERS)
 	{
@@ -190,7 +198,26 @@ public:
 	}
 };
 
-
+std::ostream& operator<<(std::ostream& os, const Student& student)
+{
+	os << HUMAN_OS_PARAMETERS(student) << " " << STUDENT_OS_PERAMETERS(student);
+	return os;
+}
+std::ostream& operator<<(std::ostream& os, const Human& human)
+{
+	os << HUMAN_OS_PARAMETERS(human) ;
+	return os;		
+}
+std::ostream& operator<<(std::ostream& os, const Teacher& teacher)
+{
+	os << HUMAN_OS_PARAMETERS(teacher) << " " << TEACHER_OS_PARAMETRS(teacher);
+	return os;
+}
+std::ostream& operator<<(std::ostream& os, const Graduate& graduate)
+{
+	os << HUMAN_OS_PARAMETERS(graduate) << " " << STUDENT_OS_PERAMETERS(graduate) << " " << GRADUATE_OS_PARAMETRS(graduate);
+	return os;
+}
 
 #define INHERITANCE
 //#define POLYMORPHISM
@@ -222,7 +249,8 @@ void main()
 		new Student("Vercetty","Tommy",30,"Theft","vice",98,99),
 		new Teacher ("White", "Walter", 50, "Chemistry", 25),
 		new Graduate ("Schreder", "Hank", 40, "Criminalistic", "WW_220", 40, 60, "How to catch Heisenberg"),
-	
+        new Student("Vercetty", "Tommy", 30, "Theft", "Vice", 98, 99),
+		new Teacher("Diaz", "Ricardo", 50, "Weapons distribution", 20)
 	};
 	cout << delimeter << endl;
 	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
@@ -237,7 +265,14 @@ void main()
 	}
 
 #endif // POLYMORPHISM
-
+	cout << human << endl;
+	cout << delimeter << endl;
+	cout << student << endl;
+	cout << delimeter << endl;
+	cout << teacher << endl;
+	cout << delimeter << endl;
+	cout << graduate << endl;
+	cout << delimeter << endl;
 
 
 
