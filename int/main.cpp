@@ -148,18 +148,17 @@ public:
 //		this->experience = experience;
 //	}
 //
+// Teacher(
 //
 //
 //
 //~Teacher()
-// 
 // cout << "TDestructor : \t" << this << endl;
 // 
-// Teacher(
 //void info()const override
 // {
 // Human::info();
-// cout << speciality <<" " << experience << " " << endl;
+// cout << speciality << " " << experience << " " << endl;
 // }
 //};
 //
