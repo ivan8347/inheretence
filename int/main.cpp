@@ -3,10 +3,10 @@ using namespace std;
 using std::cin;
 using std::cout;
 using std::endl;
+#define delimetr "\n--------------------------------\n"
+
 #define HUMAN_TAKE_PARAMETERS const std::string& last_name, const std::string& first_name, int age
 #define HUMAN_GIVE_PARAMETERS  last_name, first_name, age
-#define STUDENT_TAKE_PERAMETERS const std::string& speciality, const std::string& group, double rating, double attendance
-#define STUDENT_GIVE_PERAMETERS speciality, group, rating,  attendance
 class Human
 {
 	std::string last_name;
@@ -46,23 +46,20 @@ public:
 		set_age(age);
 		cout << "HDestructor: \t" << this << endl;
 	}
-	~Human()
+	virtual~Human()
 	{
 		cout << "HDestructor : \t" << this << endl;
 	}
-
 	// Method
-	void info()const
+	virtual void info()const
 	{
 		cout << last_name << " " << first_name << " " << age << endl;
 	}
-
-
-
-
-
-
 };
+
+#define STUDENT_TAKE_PERAMETERS const std::string& speciality, const std::string& group, double rating, double attendance
+#define STUDENT_GIVE_PERAMETERS speciality, group, rating,  attendance
+
 class Student :public Human
 {
 	std::string speciality;
@@ -104,41 +101,31 @@ public:
 		this->attendance = attendance;
 	}
 
-
-
-
 	// constructor
 
 	Student
-	(
-		HUMAN_TAKE_PARAMETERS,
-		STUDENT_TAKE_PERAMETERS
-	) :Human(HUMAN_GIVE_PARAMETERS)
+	(HUMAN_TAKE_PARAMETERS,STUDENT_TAKE_PERAMETERS) :Human(HUMAN_GIVE_PARAMETERS)
 	{
 		set_group(group);
 		set_attendance(attendance);
 		set_raitng(rating);
 		set_speciality(speciality);
 		cout << "SConstructor : \t" << this << endl;
-
 	}
 	~Student()
 	{
 		cout << "SDestructor \t" << this << endl;
 	}
-	void info()const
+	void info()const override
 	{
 		Human::info();
 		cout << speciality << " " << group << " " << rating << " " << attendance << endl;
 	}
-
-//public:
-//	void info()const
-//	{
-//		this->
-//	}
-
 };
+
+
+
+
 //class Teacher :public Human
 //{
 //	std::string speciality;
@@ -164,23 +151,54 @@ public:
 //
 //
 //
-//
-//
-//
+//~Teacher()
+// 
+// cout << "TDestructor : \t" << this << endl;
+// 
+// Teacher(
+//void info()const override
+// {
+// Human::info();
+// cout << speciality <<" " << experience << " " << endl;
+// }
 //};
 //
 
 
 
-
-
+//#define INHERITANCE
+#define POLYMORPHISM
 void main()
 {
 	setlocale(LC_ALL, " ");
 
+#ifdef INHERITANCE
 	Human human("Montana", "Antonio", 25);
 	human.info();
-	Student student("Pinkman", "Jesse", 22, "Chimestry", "WW_220", 95, 99);
+	Student student("Pinkman", "Jessie", 22, "Chemistry", "WW_220", 95, 99);
 	student.info();
+
+#endif // INHERITANCE
+
+	Human* group[] =
+	{
+		new Human("Montana", "Antonio", 25),
+		new Student("Pinkman", "Jessie", 22, "Chemistry", "WW_220", 95, 99),
+		new Student("Vercetty","Tommy",30,"Theft","vice",98,99)
+	};
+		cout << delimetr << endl;
+		for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
+		{
+			group[i]->info();
+			cout << delimetr << endl;
+		}
+		for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
+	{
+		delete group[i];
+
+	}
+
+
+
 
 }
