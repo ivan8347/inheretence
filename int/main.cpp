@@ -135,8 +135,8 @@ public:
 		Human::info();
 		cout  <<  speciality << " " << group << " " << rating << " " << attendance << endl;
 	}
-	 std::string get_ClassName() const  override{ return "Student"; }
-	std::string toString() const override
+	  std::string get_ClassName() const  override{ return "Student"; }
+	  std::string toString() const override
 	{
 		return Human::toString() + " " + speciality + " " + group + " " +
 		std::to_string(rating) + " " + std::to_string(attendance);
@@ -219,7 +219,9 @@ public:
 		Student::info();
 		cout << subject << endl;
 	}
+
 	std::string get_ClassName() const  override { return "Graduate"; }
+
 	std::string toString()const override
 	{
 		return  Student::toString() + " " + subject;
