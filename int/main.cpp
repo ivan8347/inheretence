@@ -48,7 +48,7 @@ public:
 		set_last_name(last_name);
 		set_first_name(first_name);
 		set_age(age);
-		cout << "HDestructor: \t" << this << endl;
+		cout << "HConstructor: \t" << this << endl;
 	}
 	virtual~Human()
 	{
