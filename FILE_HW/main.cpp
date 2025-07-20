@@ -35,7 +35,7 @@ public:
 	}
 	void set_first_name(const string& first_name)
 	{
-		this-> first_name = first_name;
+		this->first_name = first_name;
 	}
 
 	void set_age(int age)
@@ -57,15 +57,14 @@ public:
 	// Method
 	virtual void info()const
 	{
-		cout <<  last_name << " " << first_name << " " << age << endl;
+		cout << last_name << " " << first_name << " " << age << endl;
 	}
-	
-	virtual std::string get_ClassName() const{return "Human";}
+
 	virtual std::string toString() const
 	{
-		return get_ClassName() + " " +last_name + " " + first_name + " " + std::to_string(age);
+		return last_name + " " + first_name + " " + std::to_string(age);
 	}
-	
+
 };
 
 #define STUDENT_TAKE_PERAMETERS const std::string& speciality, const std::string& group, double rating, double attendance
@@ -76,15 +75,13 @@ class Student :public Human
 {
 	std::string speciality;
 	std::string group;
-	int rating;
-	int attendance;
-	
+	double rating;
+	double attendance;
 public:
 	const std::string& get_speciality()const
 	{
 		return speciality;
 	}
-	
 	const std::string& get_group()const
 	{
 		return group;
@@ -96,7 +93,7 @@ public:
 	double get_attendance()const
 	{
 		return attendance;
-	 }
+	}
 	void set_speciality(const std::string& speciality)
 	{
 		this->speciality = speciality;
@@ -118,7 +115,7 @@ public:
 	// constructor
 
 	Student
-	(HUMAN_TAKE_PARAMETERS,STUDENT_TAKE_PERAMETERS) :Human(HUMAN_GIVE_PARAMETERS)
+	(HUMAN_TAKE_PARAMETERS, STUDENT_TAKE_PERAMETERS) :Human(HUMAN_GIVE_PARAMETERS)
 	{
 		set_group(group);
 		set_attendance(attendance);
@@ -128,18 +125,12 @@ public:
 	}
 	~Student()
 	{
-		cout << "SDestructor : \t" << this << endl;
+		cout << "SDestructor \t" << this << endl;
 	}
 	void info()const override
 	{
 		Human::info();
-		cout  <<  speciality << " " << group << " " << rating << " " << attendance << endl;
-	}
-	 std::string get_ClassName() const  override{ return "Student"; }
-	std::string toString() const override
-	{
-		return Human::toString() + " " + speciality + " " + group + " " +
-		std::to_string(rating) + " " + std::to_string(attendance);
+		cout << speciality << " " << group << " " << rating << " " << attendance << endl;
 	}
 };
 
@@ -151,8 +142,8 @@ class Teacher :public Human
 {
 	std::string speciality;
 	int experience;
- public:
-	const std::string& get_speciality () const
+public:
+	const std::string& get_speciality() const
 	{
 		return speciality;
 	}
@@ -170,29 +161,24 @@ class Teacher :public Human
 	}
 
 	Teacher
-	   (HUMAN_TAKE_PARAMETERS, TEACHER_TAKE_PARAMETRS)
+	(HUMAN_TAKE_PARAMETERS, TEACHER_TAKE_PARAMETRS)
 		:Human(HUMAN_GIVE_PARAMETERS)
 	{
 		set_speciality(speciality);
-	    set_experience(experience);
-		cout << "TConstructor : \t" << this <<  endl;
+		set_experience(experience);
+		cout << "TConstructor : \t" << this << endl;
 	}
 
 	~Teacher()
 	{
-    cout << "TDestructor : \t" << this << endl;
-     }
-    
-   void info()const override
-    {
-    Human::info();
-    cout << speciality << " " << experience << " " << endl;
-    }
-   std::string get_ClassName() const  override { return "Teacher"; }
-    std::string toString()const override
-   {
-	   return Human::toString() + " " + speciality + " " + std::to_string(experience);
-   }
+		cout << "TDestructor : \t" << this << endl;
+	}
+
+	void info()const override
+	{
+		Human::info();
+		cout << speciality << " " << experience << " " << endl;
+	}
 };
 
 #define GRADUATE_OS_PARAMETRS(graduate) (graduate).get_subject()
@@ -212,25 +198,20 @@ public:
 	}
 	~Graduate()
 	{
-		cout << "GDestructor : \t" << this << endl;
+		cout << "GDestructor : \t " << this << endl;
 	}
 	void info()const override
 	{
 		Student::info();
 		cout << subject << endl;
 	}
-	std::string get_ClassName() const  override { return "Graduate"; }
-	std::string toString()const override
-	{
-		return  Student::toString() + " " + subject;
-	}
 };
 
-//std::ostream& operator<<(std::ostream& os, const Human& human)
-//{
-//	os << HUMAN_OS_PARAMETERS(human) ;
-//	return os;		
-//}
+std::ostream& operator<<(std::ostream& os, const Human& human)
+{
+	os << HUMAN_OS_PARAMETERS(human);
+	return os;
+}
 std::ostream& operator<<(std::ostream& os, const Student& student)
 {
 	os << HUMAN_OS_PARAMETERS(student) << " " << STUDENT_OS_PERAMETERS(student);
@@ -246,16 +227,16 @@ std::ostream& operator<<(std::ostream& os, const Graduate& graduate)
 	os << HUMAN_OS_PARAMETERS(graduate) << " " << STUDENT_OS_PERAMETERS(graduate) << " " << GRADUATE_OS_PARAMETRS(graduate);
 	return os;
 }
-
 std::ostream& operator<<(std::ostream& os, const Human& human) {
 	os << human.toString();
 	return os;
 }
 
+
 //#define INHERITANCE
-//#define OPERATOR_OS
-#define POLYMORPHISM
-#define FILE
+//#define POLYMORPHISM
+#define OPERATOR_OS
+//#define FILE
 void main()
 {
 	setlocale(LC_ALL, " ");
@@ -277,14 +258,14 @@ void main()
 #endif // INHERITANCE
 
 #ifdef POLYMORPHISM
-	Human *group[] =
+	Human* group[] =
 	{
 		new Human("Montana", "Antonio", 25),
 		new Student("Pinkman", "Jessie", 22, "Chemistry", "WW_220", 95, 99),
 		new Student("Vercetty","Tommy",30,"Theft","vice",98,99),
-		new Teacher ("White", "Walter", 50, "Chemistry", 25),
-		new Graduate ("Schreder", "Hank", 40, "Criminalistic", "WW_220", 40, 60, "How to catch Heisenberg"),
-        new Student("Vercetty", "Tommy", 30, "Theft", "Vice", 98, 99),
+		new Teacher("White", "Walter", 50, "Chemistry", 25),
+		new Graduate("Schreder", "Hank", 40, "Criminalistic", "WW_220", 40, 60, "How to catch Heisenberg"),
+		new Student("Vercetty", "Tommy", 30, "Theft", "Vice", 98, 99),
 		new Teacher("Diaz", "Ricardo", 50, "Weapons distribution", 20)
 	};
 	cout << delimeter << endl;
@@ -309,12 +290,16 @@ void main()
 
 #ifdef FILE
 	std::ofstream fout;
+
+
 	fout.open("File.txt");
 	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
 	{
+
 		fout << *group[i] << endl;
 	}
 	fout.close();
+
 	system("notepad File.txt");
 
 	std::ifstream fin("File.txt");
@@ -339,6 +324,7 @@ void main()
 	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
 	{
 		delete group[i];
+
 	}
 
 #endif // FILE

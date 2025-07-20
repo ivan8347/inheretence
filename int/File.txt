@@ -1,7 +1,7 @@
-Montana Antonio 25
-Pinkman Jessie 22
-Vercetty Tommy 30
-White Walter 50
-Schreder Hank 40
-Vercetty Tommy 30
-Diaz Ricardo 50
+Human Montana Antonio 25
+Student Pinkman Jessie 22 Chemistry WW_220 95 99
+Student Vercetty Tommy 30 Theft vice 98 99
+Teacher White Walter 50 Chemistry 25
+Graduate Schreder Hank 40 Criminalistic WW_220 40 60 How to catch Heisenberg
+Student Vercetty Tommy 30 Theft Vice 98 99
+Teacher Diaz Ricardo 50 Weapons distribution 20
