@@ -1,4 +1,7 @@
 #include<iostream>
+#include<fstream>
+#include <string>
+
 using namespace std;
 using std::cin;
 using std::cout;
@@ -56,6 +59,14 @@ public:
 	{
 		cout << last_name << " " << first_name << " " << age << endl;
 	}
+
+
+	
+		virtual std::string toString() const
+		{
+			return last_name + " " + first_name + " " + std::to_string(age);
+		}
+	
 };
 
 #define STUDENT_TAKE_PERAMETERS const std::string& speciality, const std::string& group, double rating, double attendance
@@ -203,11 +214,11 @@ std::ostream& operator<<(std::ostream& os, const Student& student)
 	os << HUMAN_OS_PARAMETERS(student) << " " << STUDENT_OS_PERAMETERS(student);
 	return os;
 }
-std::ostream& operator<<(std::ostream& os, const Human& human)
-{
-	os << HUMAN_OS_PARAMETERS(human) ;
-	return os;		
-}
+//std::ostream& operator<<(std::ostream& os, const Human& human)
+//{
+//	os << HUMAN_OS_PARAMETERS(human) ;
+//	return os;		
+//}
 std::ostream& operator<<(std::ostream& os, const Teacher& teacher)
 {
 	os << HUMAN_OS_PARAMETERS(teacher) << " " << TEACHER_OS_PARAMETRS(teacher);
@@ -218,9 +229,15 @@ std::ostream& operator<<(std::ostream& os, const Graduate& graduate)
 	os << HUMAN_OS_PARAMETERS(graduate) << " " << STUDENT_OS_PERAMETERS(graduate) << " " << GRADUATE_OS_PARAMETRS(graduate);
 	return os;
 }
+std::ostream& operator<<(std::ostream& os, const Human& human) {
+	os << human.toString();
+	return os;
+}
 
-#define INHERITANCE
-//#define POLYMORPHISM
+
+//#define INHERITANCE
+#define POLYMORPHISM
+//#define OPERATOR<<
 void main()
 {
 	setlocale(LC_ALL, " ");
@@ -242,7 +259,7 @@ void main()
 #endif // INHERITANCE
 
 #ifdef POLYMORPHISM
-	Human* group[] =
+	Human *group[] =
 	{
 		new Human("Montana", "Antonio", 25),
 		new Student("Pinkman", "Jessie", 22, "Chemistry", "WW_220", 95, 99),
@@ -258,13 +275,9 @@ void main()
 		group[i]->info();
 		cout << delimeter << endl;
 	}
-	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
-	{
-		delete group[i];
-
-	}
 
 #endif // POLYMORPHISM
+#ifdef OPERATOR<<
 	cout << human << endl;
 	cout << delimeter << endl;
 	cout << student << endl;
@@ -274,8 +287,45 @@ void main()
 	cout << graduate << endl;
 	cout << delimeter << endl;
 
+#endif // OPERATOR<<
 
+	std::ofstream fout;
+	
+	
+	fout.open("File.txt");
+	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
+	{
+		//group[i]->info();
+		cout <<  group[i] << std::endl;
+		fout <<  *group[i]<< endl;
+	}
+	fout.close(); 
 
+	system("notepad File.txt");
 
+	std::ifstream fin("File.txt");
+	if (fin.is_open())
+	{
+		while (!fin.eof())
+		{
+			const int SIZE = 256;
+			char sz_buffer[SIZE] = {};
+			//fin >> sz_buffer;
+			fin.getline(sz_buffer, SIZE);
+		cout << delimeter << endl;
+			cout << sz_buffer << endl;
+		}
+		fin.close();
+	}
+	else
+	{
+		cout << delimeter << endl;
+		std::cerr << "error" << endl;
+	}
+	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
+	{
+		delete group[i];
+
+	}
 
 }
