@@ -1,4 +1,6 @@
 #include<iostream>
+#include<fstream>
+#include<string>
 using namespace std;
 using std::cin;
 using std::cout;
@@ -9,7 +11,8 @@ using std::endl;
 #define HUMAN_GIVE_PARAMETERS  last_name, first_name, age
 class Human
 {
-	static const int LAST_NAME_WIDTH = 15;
+	static const int TYPE_WIDTH = 10;
+	static const int LAST_NAME_WIDTH = 16;
 	static const int FIRST_NAME_WIDTH = 10;
 	static const int AGE_WIDTH = 3;
 	static int count;
@@ -54,7 +57,7 @@ public:
 		set_first_name(first_name);
 		set_age(age);
 		count++;
-		cout << "HDestructor: \t" << this << endl;
+		cout << "HConstructor : \t" << this << endl;
 	}
 	virtual~Human()
 	{
@@ -64,9 +67,13 @@ public:
 	// Method
 	virtual std::ostream& info(std::ostream& os)const
 	{
+		os.width(TYPE_WIDTH);
+		os << std::left;
+		
+		os << std:: string(typeid(*this).name()+6) + ":";
+		//os << strchr(typeid(*this).name(),' ')+1 << ":";
 		//return os << last_name << " " << first_name << " " << age  ;
 		os.width(LAST_NAME_WIDTH);
-		os << std::left;
 		os << last_name;
 		os.width(FIRST_NAME_WIDTH);
 		os << first_name;
@@ -141,7 +148,7 @@ public:
 	}
 	~Student()
 	{
-		cout << "SDestructor \t" << this << endl;
+		cout << "SDestructor : \t" << this << endl;
 	}
 	std::ostream& info(std::ostream& os)const override
 	{
@@ -266,18 +273,23 @@ void main()
 		new Student("Vercetty","Tommy",30,"Theft","vice",98,99),
 		new Teacher ("White", "Walter", 50, "Chemistry", 25),
 		new Graduate ("Schreder", "Hank", 40, "Criminalistic", "WW_220", 40, 60, "How to catch Heisenberg"),
-	    new Student("Vercetty", "Tommy", 30, "Theft", "Vice", 98, 99),
 		new Teacher("Diaz", "Ricardo", 50, "Weapons distribution", 20),
 		new Graduate("Targarian", "Daineris", 22, "Flight", "GoT", 91, 92, "How to make smoke"),
 		new Teacher("Schwartzneger", "Arnold", 85, "Heavy Metal", 60)
 	};
+	char filename[] = "group.txt";
+	std::ofstream fout(filename);
 	cout << delimeter << endl;
 	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
 	{
 		//group[i]->info();
-		cout << *group[i];
+		cout << *group[i] << endl;
+		fout << *group[i] << endl;
 		cout << delimeter << endl;
 	}
+	fout.close();
+	char cmd[FILENAME_MAX] = "notepad ";
+	system((std::string(" start notepad ") + filename).c_str());
 	cout << " Колличество людей :" << group[0]->get_count() << endl;
 	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
 	{
