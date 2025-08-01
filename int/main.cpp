@@ -81,12 +81,20 @@ public:
 		os << age;
 		return os;
 	}
+	virtual std::istream& scan(std::istream& is)
+	{
+		return is >> last_name >> first_name >> age;
+	}
 };
 int Human:: count = 0;
 std::ostream& operator << (std::ostream& os, const Human& obj)
 {
 		return obj.info(os);
 	//return os << obj.get_last_name() << " " << obj.get_first_name() << " " << obj.get_age();
+}
+std::istream& operator >>(std::istream& is, Human& obj)
+{
+	return obj.scan(is);
 }
 #define STUDENT_TAKE_PERAMETERS const std::string& speciality, const std::string& group, double rating, double attendance
 #define STUDENT_GIVE_PERAMETERS speciality, group, rating,  attendance
@@ -165,6 +173,10 @@ public:
 
 		//return os << speciality << " " << group << " " << rating << " " << attendance ;
 	}
+	std::istream& scan(std::istream& is)override
+	{
+		return Human:: scan(is) >> speciality >> group >> rating >> attendance;
+	}
 };
 
 #define TEACHER_TAKE_PARAMETRS const std::string& speciality, int experience
@@ -219,6 +231,10 @@ class Teacher :public Human
 	return os;
    // return os << speciality << " " << experience ;
     }
+   std::istream& scan(std::istream& is)override
+   {
+	   return Human::scan(is) >> speciality >> experience;
+   }
 };
 class Graduate :public Student
 {
@@ -239,17 +255,23 @@ public:
 		Student::info(os) << " ";
 		return os << subject ;
 	}
+	std::istream& scan(std::istream& is)override
+	{
+		return std::getline(Student::scan(is) , subject);
+	}
 };
 void Print(Human* group[], const int n)
 {	
+	cout << delimeter << endl;
 	cout << typeid(group).name() << endl;
 	for (int i = 0; i < n; i++)
 	{
 		cout << *group[i] << endl;
 	}
+	cout << delimeter << endl;
 	cout << " Колличество людей :" << group[0]->get_count() << endl;
  }
-void SAVE(Human** group,const int n,char filename[])
+void Save(Human** group,const int n,const char filename[])
 {
 	std::ofstream fout(filename);
 	for (int i = 0; i < n; i++)
@@ -260,6 +282,48 @@ void SAVE(Human** group,const int n,char filename[])
 	char cmd[FILENAME_MAX] = "notepad ";
 	system((std::string(" start notepad ") + filename).c_str());
  }
+Human* HumanFactory(const std::string& type)
+{
+	Human* human = nullptr;
+	if (strstr(type.c_str(),"Human")) human = new Human("", "", 0);
+	if (strstr(type.c_str(),"Student")) human = new Student("", "", 0, "", "", 0, 0);
+	if (strstr(type.c_str(),"Graduate")) human = new Graduate("", "", 0, "", "", 0, 0,"");
+	if (strstr(type.c_str(),"Teacher"))human = new Teacher("", "", 0, "", 0);
+	
+	return human;
+}
+Human** Load(const char filename[])
+{
+			int n = 0;
+	Human** group = nullptr;
+	std::ifstream fin(filename);
+	if (fin.is_open())
+	{ 
+			std::string buffer;
+			while(!fin.eof())
+			{
+				std::getline(fin, buffer);
+				if (buffer.size() == 0)continue;
+				n++;
+			}
+	cout << "Количество объектов в памяти : " << n << endl;
+			cout << " File position : " << fin.tellg() << endl;
+	group = new Human* [n] {};
+	fin.clear();
+	fin.seekg(0);
+			cout << " File position : " << fin.tellg() << endl;
+			for (int i = 0; i < n; i++)
+			{
+				std::getline(fin, buffer,':');
+				cout << buffer << endl;
+				group[i] = HumanFactory(buffer);
+				//std::getline(fin, buffer);
+				fin >> *group[i];
+			}
+    }
+	fin.close();
+	return group;
+}
 void Clear(Human** group, const int n)
 {
 	for (int i = 0; i < n; i++)
@@ -270,6 +334,7 @@ void Clear(Human** group, const int n)
 
 //#define INHERITANCE
 //#define POLYMORPHISM
+//#define WRITH_TO_FILE
 void main()
 {
 	setlocale(LC_ALL, "");
@@ -289,8 +354,6 @@ void main()
 	cout << delimeter << endl;
 
 #endif // INHERITANCE
-
-
 #ifdef POLYMORPHISM
 	Human* group[] =
 	{
@@ -324,8 +387,7 @@ void main()
 	cout << " Колличество людей :" << group[0]->get_count() << endl;
 
 #endif // POLYMORPHISM
-
- 
+#ifdef WRITH_TO_FILE
 
 	Human* group[] =
 	{
@@ -339,9 +401,14 @@ void main()
 		new Teacher("Schwartzneger", "Arnold", 85, "Heavy Metal", 60)
 	};
 	cout << typeid(group).name() << endl;
-	Print(group, sizeof(group)/sizeof(group[0]));
-	Clear(group, sizeof(group)/sizeof(group[0]));
+	Print(group, sizeof(group) / sizeof(group[0]));
+	Save(group, sizeof(group) / sizeof(group[0]), "group.txt");
+	Clear(group, sizeof(group) / sizeof(group[0]));
 
+#endif // WRITH_TO_FILE
 
+	Human** group =  Load("group.txt");
+	cout << "\n=================================\n" << endl;
+	Print(group, 8);
 
 }
