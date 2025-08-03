@@ -1,6 +1,7 @@
 #include<iostream>
 #include<fstream>
 #include<string>
+#include<sstream>
 using namespace std;
 using std::cin;
 using std::cout;
@@ -175,7 +176,9 @@ public:
 	}
 	std::istream& scan(std::istream& is)override
 	{
-		return Human:: scan(is) >> speciality >> group >> rating >> attendance;
+		char* buffer = new char[SPECIALITY_WIDTH + 2];
+		 
+		return Human::scan(is) >> speciality >> group >> rating >> attendance;
 	}
 };
 
@@ -233,7 +236,15 @@ class Teacher :public Human
     }
    std::istream& scan(std::istream& is)override
    {
-	   return Human::scan(is) >> speciality >> experience;
+	   char* buffer = new char[SPECIALITY_WIDTH] {};
+	   Human::scan(is);
+	   is.read(buffer, SPECIALITY_WIDTH);
+	   buffer[SPECIALITY_WIDTH - 1] = 0;
+	   speciality = buffer + 1;
+	   is >> experience;
+	   delete[] buffer;
+	   return is;
+	   //return Human::scan(is) >> speciality >> experience;
    }
 };
 class Graduate :public Student
@@ -266,7 +277,7 @@ void Print(Human* group[], const int n)
 	cout << typeid(group).name() << endl;
 	for (int i = 0; i < n; i++)
 	{
-		cout << *group[i] << endl;
+		cout <<( *group[i]) << endl;
 	}
 	cout << delimeter << endl;
 	cout << " Колличество людей :" << group[0]->get_count() << endl;
@@ -308,14 +319,15 @@ Human** Load(const char filename[])
 			}
 	cout << "Количество объектов в памяти : " << n << endl;
 			cout << " File position : " << fin.tellg() << endl;
-	group = new Human* [n] {};
 	fin.clear();
 	fin.seekg(0);
+	group = new Human* [n] {};
 			cout << " File position : " << fin.tellg() << endl;
 			for (int i = 0; i < n; i++)
 			{
 				std::getline(fin, buffer,':');
 				cout << buffer << endl;
+
 				group[i] = HumanFactory(buffer);
 				//std::getline(fin, buffer);
 				fin >> *group[i];
