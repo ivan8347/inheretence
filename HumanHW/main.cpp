@@ -44,7 +44,7 @@ public:
 	}
 	void set_first_name(const string& first_name)
 	{
-		this-> first_name = first_name;
+		this->first_name = first_name;
 	}
 
 	void set_age(int age)
@@ -70,10 +70,8 @@ public:
 	{
 		os.width(TYPE_WIDTH);
 		os << std::left;
-		
-		os << std:: string(typeid(*this).name()+6) + ":";
-		//os << strchr(typeid(*this).name(),' ')+1 << ":";
-		//return os << last_name << " " << first_name << " " << age  ;
+
+		os << std::string(typeid(*this).name() + 6) + ":";
 		os.width(LAST_NAME_WIDTH);
 		os << last_name;
 		os.width(FIRST_NAME_WIDTH);
@@ -87,10 +85,10 @@ public:
 		return is >> last_name >> first_name >> age;
 	}
 };
-int Human:: count = 0;
+int Human::count = 0;
 std::ostream& operator << (std::ostream& os, const Human& obj)
 {
-		return obj.info(os);
+	return obj.info(os);
 	//return os << obj.get_last_name() << " " << obj.get_first_name() << " " << obj.get_age();
 }
 std::istream& operator >>(std::istream& is, Human& obj)
@@ -125,7 +123,7 @@ public:
 	double get_attendance()const
 	{
 		return attendance;
-	 }
+	}
 	void set_speciality(const std::string& speciality)
 	{
 		this->speciality = speciality;
@@ -147,7 +145,7 @@ public:
 	// constructor
 
 	Student
-	(HUMAN_TAKE_PARAMETERS,STUDENT_TAKE_PERAMETERS) :Human(HUMAN_GIVE_PARAMETERS)
+	(HUMAN_TAKE_PARAMETERS, STUDENT_TAKE_PERAMETERS) :Human(HUMAN_GIVE_PARAMETERS)
 	{
 		set_group(group);
 		set_attendance(attendance);
@@ -163,7 +161,7 @@ public:
 	{
 		Human::info(os);
 		os.width(SPECIALITY_WIDTH);
-		os <<  speciality;
+		os << speciality;
 		os.width(GROUP_WIDTH);
 		os << group;
 		os.width(RATING_WIDTH);
@@ -177,7 +175,7 @@ public:
 	std::istream& scan(std::istream& is)override
 	{
 		char* buffer = new char[SPECIALITY_WIDTH + 2];
-		 
+
 		return Human::scan(is) >> speciality >> group >> rating >> attendance;
 	}
 };
@@ -192,8 +190,8 @@ class Teacher :public Human
 	static const int EXPERIENCE_WIDTH = 3;
 	std::string speciality;
 	int experience;
- public:
-	const std::string& get_speciality () const
+public:
+	const std::string& get_speciality() const
 	{
 		return speciality;
 	}
@@ -211,42 +209,47 @@ class Teacher :public Human
 	}
 
 	Teacher
-	   (HUMAN_TAKE_PARAMETERS, TEACHER_TAKE_PARAMETRS)
+	(HUMAN_TAKE_PARAMETERS, TEACHER_TAKE_PARAMETRS)
 		:Human(HUMAN_GIVE_PARAMETERS)
 	{
 		set_speciality(speciality);
-	    set_experience(experience);
-		cout << "TConstructor : \t" << this <<  endl;
+		set_experience(experience);
+		cout << "TConstructor : \t" << this << endl;
 	}
 
 	~Teacher()
 	{
-    cout << "TDestructor : \t" << this << endl;
-     }
-    
-   std::ostream& info(std::ostream& os)const override
-    {
-    Human::info(os);
-	os.width(SPECIALITY_WIDTH);
-	os << speciality;
-	os.width(EXPERIENCE_WIDTH);
-	os << experience;
-	return os;
-   // return os << speciality << " " << experience ;
-    }
-   std::istream& scan(std::istream& is)override
-   {
-	  
-	   char* buffer = new char[SPECIALITY_WIDTH] {};
-	   Human::scan(is);
-	   is.read(buffer, SPECIALITY_WIDTH);
-	   buffer[SPECIALITY_WIDTH - 1] = 0;
-	   speciality = buffer + 1;
-	   is >> experience;
-	   delete[] buffer;
-	   return is;
-	  //return Human::scan(is) >> speciality >> experience;
-   }
+		cout << "TDestructor : \t" << this << endl;
+	}
+
+	std::ostream& info(std::ostream& os)const override
+	{
+		Human::info(os);
+		os.width(SPECIALITY_WIDTH);
+		os << speciality;
+		os.width(EXPERIENCE_WIDTH);
+		os << experience;
+		return os;
+		// return os << speciality << " " << experience ;
+	}
+	std::istream& scan(std::istream& is)override
+	{
+		char* buffer = new char[SPECIALITY_WIDTH + 1];
+		is.read(buffer, SPECIALITY_WIDTH);
+		buffer[SPECIALITY_WIDTH] = '\0'; // завершаем строку
+		speciality = std::string(buffer);
+		delete[] buffer;
+		return is;
+		/* char* buffer = new char[SPECIALITY_WIDTH] {};
+		 Human::scan(is);
+		 is.read(buffer, SPECIALITY_WIDTH);
+		 buffer[SPECIALITY_WIDTH - 1] = 0;
+		 speciality = buffer + 1;
+		 is >> experience;
+		 delete[] buffer;
+		 
+		*/ //return Human::scan(is) >> speciality >> experience;
+	}
 };
 class Graduate :public Student
 {
@@ -265,25 +268,99 @@ public:
 	std::ostream& info(std::ostream& os)const override
 	{
 		Student::info(os) << " ";
-		return os << subject ;
+		return os << subject;
 	}
 	std::istream& scan(std::istream& is)override
 	{
-		return std::getline(Student::scan(is) , subject);
+		return std::getline(Student::scan(is), subject);
 	}
 };
 void Print(Human* group[], const int n)
-{	
+{
 	cout << delimeter << endl;
 	cout << typeid(group).name() << endl;
 	for (int i = 0; i < n; i++)
 	{
-		cout <<( *group[i]) << endl;
+		cout << (*group[i]) << endl;
 	}
 	cout << delimeter << endl;
 	cout << " Колличество людей :" << group[0]->get_count() << endl;
- }
-void Save(Human** group,const int n,const char filename[])
+}
+
+Human* HumanFactory(const std::string& type)
+{
+	Human* human = nullptr;
+	if (type == "Human") 
+	{
+		std::string last_name, first_name;
+		int age;
+		std::cout << "Введите фамилию, имя, возраст: " << endl;
+		std::cin >> last_name  >> first_name >> age;
+		return new Human(last_name,first_name, age);
+	}
+	if (type == "Student")
+	{
+		std::string last_name, first_name, speciality, group_name;
+		int age;
+		double rating, attendance;
+		std::cout << "Введите фамилию, имя, возраст, специальность, группу, рейтинг, посещаемость: " << endl;
+		std::cin >> last_name >> first_name >> age >> speciality >> group_name >> rating >> attendance;
+		return new Student(last_name, first_name, age, speciality, group_name, rating, attendance);
+	}
+	
+	if (type == "Teacher")
+	{
+		std::string last_name, first_name, speciality;
+		int age, experience;
+		std::cout << "Введите фамилию, имя, возраст, специальность, опыт: " << endl;
+		std::cin >> last_name >> first_name >> age >> speciality >> experience;
+		return new Teacher(last_name, first_name, age, speciality, experience);
+	}
+    if (type == "Graduate")
+	{
+		std::string last_name, first_name, speciality, group_name, subject;
+		int age;
+		double rating, attendance;
+		std::cout << "Введите фамилию, имя, возраст, специальность, группу, рейтинг, посещаемость, предмет диплома: " << endl;
+		std::cin >> last_name >> first_name >> age >> speciality >> group_name >> rating >> attendance >> subject;
+		return new Graduate(last_name, first_name, age, speciality, group_name, rating, attendance, subject);
+	}
+		return nullptr;
+	
+}
+
+void EnterAndSaveData(Human* group[], int& n, const int max_size)
+{
+	while (n < max_size)
+	{
+		std::string type;
+		std::cout << "Введите тип объекта (Human, Student, Teacher, Graduate), или 'exit' для завершения: ";
+		std::cin >> type;
+		if (type == "exit")
+			break;
+
+		Human* obj = HumanFactory(type);
+		if (obj)
+		{
+			group[n] = obj;
+			n++;
+		}
+		else
+		{
+			std::cout << "Объект не создан, попробуйте снова.\n";
+		}
+
+		char choice;
+		std::cout << "Добавить еще? (y/n): ";
+		std::cin >> choice;
+		if (choice != 'y' && choice != 'Y')
+			break;
+	}
+	
+		
+}
+
+void Save(Human** group, const int n, const char filename[])
 {
 	std::ofstream fout(filename);
 	for (int i = 0; i < n; i++)
@@ -293,48 +370,40 @@ void Save(Human** group,const int n,const char filename[])
 	fout.close();
 	char cmd[FILENAME_MAX] = "notepad ";
 	system((std::string(" start notepad ") + filename).c_str());
- }
-
-Human* HumanFactory(const std::string& type)
-{
-	Human* human = nullptr;
-	if (strstr(type.c_str(),"Human")) human = new Human("", "", 0);
-	if (strstr(type.c_str(),"Student")) human = new Student("", "", 0, "", "", 0, 0);
-	if (strstr(type.c_str(),"Graduate")) human = new Graduate("", "", 0, "", "", 0, 0,"");
-	if (strstr(type.c_str(),"Teacher"))human = new Teacher("", "", 0, "", 0);
-	
-	return human;
 }
+
+
+
 Human** Load(const char filename[])
 {
-			int n = 0;
+	int n = 0;
 	Human** group = nullptr;
 	std::ifstream fin(filename);
 	if (fin.is_open())
-	{ 
-			std::string buffer;
-			while(!fin.eof())
-			{
-				std::getline(fin, buffer);
-				if (buffer.size() == 0)continue;
-				n++;
-			}
-	cout << "Количество объектов в памяти : " << n << endl;
-			cout << " File position : " << fin.tellg() << endl;
-	fin.clear();
-	fin.seekg(0);
-	group = new Human* [n] {};
-			cout << " File position : " << fin.tellg() << endl;
-			for (int i = 0; i < n; i++)
-			{
-				std::getline(fin, buffer,':');
-				cout << buffer << endl;
+	{
+		std::string buffer;
+		while (!fin.eof())
+		{
+			std::getline(fin, buffer);
+			if (buffer.size() == 0)continue;
+			n++;
+		}
+		cout << "Количество объектов в памяти : " << n << endl;
+		cout << " File position : " << fin.tellg() << endl;
+		fin.clear();
+		fin.seekg(0);
+		group = new Human * [n] {};
+		cout << " File position : " << fin.tellg() << endl;
+		for (int i = 0; i < n; i++)
+		{
+			std::getline(fin, buffer, ':');
+			cout << buffer << endl;
 
-				group[i] = HumanFactory(buffer);
-				//std::getline(fin, buffer);
-				fin >> *group[i];
-			}
-    }
+			group[i] = HumanFactory(buffer);
+			//std::getline(fin, buffer);
+			fin >> *group[i];
+		}
+	}
 	fin.close();
 	return group;
 }
@@ -345,6 +414,8 @@ void Clear(Human** group, const int n)
 		delete group[i];
 	}
 }
+
+
 
 //#define INHERITANCE
 //#define POLYMORPHISM
@@ -401,28 +472,29 @@ void main()
 	cout << " Колличество людей :" << group[0]->get_count() << endl;
 
 #endif // POLYMORPHISM
+
 #ifdef WRITH_TO_FILE
-	//cout >> "Введите тип : " >> endl;
-	Human* group[] =
-	{
-		new Human("Montana", "Antonio", 25),
-		new Student("Pinkman", "Jessie", 22, "Chemistry", "WW_220", 95, 99),
-		new Student("Vercetty","Tommy",30,"Theft","vice",98,99),
-		new Teacher("White", "Walter", 50, "Chemistry", 25),
-		new Graduate("Schreder", "Hank", 40, "Criminalistic", "WW_220", 40, 60, "How to catch Heisenberg"),
-		new Teacher("Diaz", "Ricardo", 50, "Weapons distribution", 20),
-		new Graduate("Targarian", "Daineris", 22, "Flight", "GoT", 91, 92, "How to make smoke"),
-		new Teacher("Schwartzneger", "Arnold", 85, "Heavy Metal", 60)
-	};
-	cout << typeid(group).name() << endl;
-	Print(group, sizeof(group) / sizeof(group[0]));
-	Save(group, sizeof(group) / sizeof(group[0]), "group.txt");
-	Clear(group, sizeof(group) / sizeof(group[0]));
+
+
+	const int MAX_GROUP_SIZE = 20;
+	Human* group[MAX_GROUP_SIZE] = {};
+	int n = 0;
+
+	EnterAndSaveData(group, n, MAX_GROUP_SIZE);
+
+	// Далее можно сохранить в файл и вывести
+	Save(group, n, "group.txt");
+	Print(group, n);
+	Clear(group, n);
+
+	
+
 
 #endif // WRITH_TO_FILE
 
-	Human** group =  Load("group.txt");
-	cout << "\n=================================\n" << endl;
-	Print(group, 8);
+		Human** group =  Load("group.txt");
+		cout << "\n=================================\n" << endl;
+		Print(group, 8);
 
-}
+	}
+	
