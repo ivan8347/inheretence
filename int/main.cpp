@@ -348,7 +348,7 @@ void Clear(Human** group, const int n)
 
 //#define INHERITANCE
 //#define POLYMORPHISM
-//#define WRITH_TO_FILE
+#define WRITH_TO_FILE
 void main()
 {
 	setlocale(LC_ALL, "");
@@ -421,8 +421,8 @@ void main()
 
 #endif // WRITH_TO_FILE
 
-	Human** group =  Load("group.txt");
+	/*Human** group =  Load("group.txt");
 	cout << "\n=================================\n" << endl;
-	Print(group, 8);
+	Print(group, 8);*/
 
 }
