@@ -6,3 +6,4 @@ Graduate: Schreder        Hank      40 Criminalistic         WW_220  40   60    
 Teacher:  Diaz            Ricardo   50 Weapons distribution  20 
 Graduate: Targarian       Daineris  22 Flight                GoT     91   92    How to make smoke
 Teacher:  Schwartzneger   Arnold    85 Heavy Metal           60 
+ураааааааа

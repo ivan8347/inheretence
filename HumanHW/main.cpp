@@ -2,6 +2,7 @@
 #include<fstream>
 #include<string>
 #include<sstream>
+#include<Windows.h>
 using namespace std;
 using std::cin;
 using std::cout;
@@ -358,13 +359,15 @@ void EnterData(Human* group[], int& n, const int max_size)
 void Save(Human** group, const int n, const char filename[])
 {
 	std::ofstream fout(filename);
+	SetConsoleCP(1251);
 	for (int i = 0; i < n; i++)
 	{
 		fout << *group[i] << endl;
 	}
+	SetConsoleCP(866);
 	fout.close();
 	char cmd[FILENAME_MAX] = "notepad ";
-	system((std::string(" start notepad ") + filename).c_str());
+	system((std::string("start notepad ") + filename).c_str());
 }
 
 void PrintFile(const char* filename)
