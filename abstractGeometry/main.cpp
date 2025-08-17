@@ -2,6 +2,9 @@
 #include<iostream>
 #include<Windows.h>
 #include <cmath>
+
+#define M_PI 3.14159265358979323846
+
 using namespace std;
 
 
@@ -182,17 +185,11 @@ namespace Geometry
 			HBRUSH hBrush = CreateSolidBrush(color);
 			SelectObject(hdc, hPen);
 			SelectObject(hdc, hBrush);
-
 			::Rectangle(hdc, start_x, start_y, start_x + side_1, start_y + side_2);
-
-
-
 		// удаляем карандаш
 			DeleteObject(hPen);
 			DeleteObject(hBrush);
-			ReleaseDC(hwnd, hdc);
-
-			
+			ReleaseDC(hwnd, hdc);			
 		}
 		Rectangle(double side_1, double side_2, SHAPE_TAKE_PARAMETERS) :Shape(SHAPE_GIVE_PARAMETERS)
 		{
@@ -210,61 +207,76 @@ namespace Geometry
 	};
 	class Triangle :public Shape
 	{
-		double side_1;
-		double side_2;
-		double height;
-	public:
-		void set_side_1(double side_1) { this->side_1 = side_1;}
-		void set_side_2(double side_2) { this->side_2 = side_2;}
-		void set_height(double height) { this->height = height;}
-		double get_side_1()const {return side_1;}
-		double get_side_2()const {return side_2;}
-		double get_height()const { return height;}
-		double get_side_3()const { return sqrt(pow(side_1 / 2.0, 2) + pow(height, 2));}
+			double side_1;
+			double side_2;
+			double angleDeg; // угол между сторонами в градусах
 
-		double get_area()const override { return (side_1 * height) / 2;}
-		double get_perimeter()const override {return side_1 + side_2 + get_side_3();}
+		public:
+			void set_side_1(double side_1) { this->side_1 = side_1; }
+			void set_side_2(double side_2) { this->side_2 = side_2; }
+			void set_angleDeg(double angleDeg) { this->angleDeg = angleDeg; }
 
+			double get_side_1() const { return side_1; }
+			double get_side_2() const { return side_2; }
+			double get_angleDeg() const { return angleDeg; }
 
-		void draw()const override
-		{
-			HWND hwnd = GetConsoleWindow();
-			HDC hdc = GetDC(hwnd);
-			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(color);
-			SelectObject(hdc, hPen);
-			SelectObject(hdc, hBrush);
-			POINT A = { start_x, start_y };
-			POINT B = { start_x + side_1, start_y };
-			POINT C;
-			C.x = start_x + side_2;
-			C.y = start_y + height; 
+			// Метод для вычисления площади по двум сторонам и углу
+			double get_area() const override
+			{
+				double angleRad = angleDeg * M_PI / 180;
+				return 0.5 * side_1 * side_2 * sin(angleRad);
+			}
 
-			POINT points[3] = { A, B, C };
-			Polygon(hdc, points, 3); 
-			
+			double get_side_3() const
+			{
+				return sqrt(pow(side_1, 2) + pow(side_2, 2) - 2 * side_1 * side_2 * cos(angleDeg * M_PI / 180));
+			}
+			double get_perimeter()const override { return side_1 + side_2 + get_side_3();}
 
-			DeleteObject(hPen);
-			DeleteObject(hBrush);
-			ReleaseDC(hwnd, hdc);
-		}
-		Triangle(double side_1, double side_2, double height, SHAPE_TAKE_PARAMETERS)
-			:Shape(SHAPE_GIVE_PARAMETERS)
-		{
-			set_side_1(side_1);
-			set_side_2(side_2);
-			set_height(height);
-		}
-		void info()const override
-		{
-			cout << typeid(*this).name() << endl;
-			cout << "Сторона 1: " << get_side_1() << endl;
-			cout << "Сторона 2: " << get_side_2() << endl;
-			cout << "Сторона 3: " << get_side_3() << endl;
-			cout << "Высота: " << get_height() << endl;
-			Shape::info();
-		}
+			void draw() const override
+			{
+				HWND hwnd = GetConsoleWindow();
+				HDC hdc = GetDC(hwnd);
+				HPEN hPen = CreatePen(PS_SOLID, line_width, color);
+				HBRUSH hBrush = CreateSolidBrush(color);
+				SelectObject(hdc, hPen);
+				SelectObject(hdc, hBrush);
+
+				POINT A = { start_x, start_y };
+				POINT B = { start_x + side_1, start_y };
+				double angleRad = get_angleDeg() * M_PI / 180;
+				POINT C;
+				C.x = start_x + side_2 * cos(angleRad);
+				C.y = start_y - side_2 * sin(angleRad); 
+				POINT points[3] = { A, B, C };
+				Polygon(hdc, points, 3);
+
+				DeleteObject(hPen);
+				DeleteObject(hBrush);
+				ReleaseDC(hwnd, hdc);
+			}
+
+			Triangle(double side_1, double side_2, double angleDeg, SHAPE_TAKE_PARAMETERS)
+				:Shape(SHAPE_GIVE_PARAMETERS)
+			{
+				set_side_1(side_1);
+				set_side_2(side_2);
+				set_angleDeg(angleDeg);
+
+			}
+			void info() const override
+			{
+				cout << typeid(*this).name() << endl;
+				cout << "Сторона 1: " << get_side_1() << endl;
+				cout << "Сторона 2: " << get_side_2() << endl;
+				cout << "Угол между сторонами : " << get_angleDeg() << endl;
+				cout << "Сторона 3 : " << get_side_3() << endl;
+				cout << "Площадь по двум сторонам и углу: " << get_area() << endl;
+				Shape::info();
+			}
+
 	};
+	 
 
 		class Square :public Rectangle
 		{
@@ -277,15 +289,22 @@ void main()
 {
 	setlocale(LC_ALL, "");
 
-	//Geometry::Square square(50, 900, 100, 5, Geometry::Color::Red);
-	//square.info();
-	//cout << "\n";
-	//
-	//Geometry::Rectangle rectangle(200, 150, 550, 100, 1, Geometry::Color::Blue);
-	//rectangle.info();
-	//cout << "\n";
-
-	Geometry::Triangle triangle(200, 300, 60,100,100, 1, Geometry::Color::Green);
+	Geometry::Square square(50, 650, 50, 5, Geometry::Color::Red);
+	square.info();
+	square.draw();
+	cout << "\n";
+	
+	Geometry::Rectangle rectangle(200, 150, 750, 50, 1, Geometry::Color::Blue);
+	rectangle.info();
+	rectangle.draw();
+	cout << "\n";
+	
+	Geometry::Triangle triangle(150, 200, 35,750,50, 1, Geometry::Color::Green);
 	triangle.info();
+	triangle.draw();
 
+	HWND hwnd = GetConsoleWindow();
+	InvalidateRect(hwnd, NULL, TRUE);
+	UpdateWindow(hwnd);
+	Sleep(5000);
 }
