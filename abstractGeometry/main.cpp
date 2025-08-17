@@ -3,7 +3,7 @@
 #include<Windows.h>
 #include <cmath>
 
-#define M_PI 3.14159265358979323846
+#define M_PI 3.14
 
 using namespace std;
 
@@ -21,7 +21,14 @@ namespace Geometry
 	};
 #define SHAPE_TAKE_PARAMETERS int start_x,int start_y,int line_width, Color color
 #define SHAPE_GIVE_PARAMETERS start_x, start_y, line_width, color
-
+#define DRAW_SETUP(hwnd, hdc, hPen, hBrush, line_width, color) \
+    HWND hwnd = GetConsoleWindow(); \
+    HDC hdc = GetDC(hwnd); \
+    HPEN hPen = CreatePen(PS_SOLID, line_width, color); \
+    HBRUSH hBrush = CreateSolidBrush(color); \
+    SelectObject(hdc, hPen); \
+    SelectObject(hdc, hBrush);
+    
 	class Shape
 	{
 		static const int MIN_START_X = 100;
@@ -101,49 +108,6 @@ namespace Geometry
 		}
 	};
 
-	/*class Square :public Shape
-	{
-		double side;
-	public:
-		void set_side(double side)
-		{
-			this->side = side;
-		}
-		double get_side()const
-		{
-			return side;
-		}
-		double get_area()const override
-		{
-			return side * side;
-		}
-		double get_perimeter()const override
-		{
-			return side * 4;
-		}
-		void draw()const override
-		{
-			for (int i = 0; i < side; i++)
-			{
-				for (int j = 0; j < side; j++)
-				{
-					cout << "* ";
-				}
-				cout << endl;
-			}
-		}
-		Square(double side, SHAPE_TAKE_PARAMETERS) :Shape(SHAPE_GIVE_PARAMETERS)
-		{
-			set_side(side);
-		}
-		void info()const override
-		{
-			cout << typeid(*this).name() << endl;
-			cout << "Квадрат" << endl;
-			cout << "Сторона квадрата: " << get_side() << endl;
-			Shape::info();
-		}
-	};*/
 	class Rectangle:public Shape
 	{
 		double side_1;
@@ -203,8 +167,12 @@ namespace Geometry
 			cout << "Сторона 1: " << get_side_1() << endl;
 			cout << "Сторона 2: " << get_side_2() << endl;
 			Shape::info();
+			Sleep(1000);
 		}
 	};
+
+
+
 	class Triangle :public Shape
 	{
 			double side_1;
@@ -235,19 +203,13 @@ namespace Geometry
 
 			void draw() const override
 			{
-				HWND hwnd = GetConsoleWindow();
-				HDC hdc = GetDC(hwnd);
-				HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-				HBRUSH hBrush = CreateSolidBrush(color);
-				SelectObject(hdc, hPen);
-				SelectObject(hdc, hBrush);
-
+				DRAW_SETUP(hwnd, hdc, hPen, hBrush, line_width, color)
 				POINT A = { start_x, start_y };
 				POINT B = { start_x + side_1, start_y };
 				double angleRad = get_angleDeg() * M_PI / 180;
 				POINT C;
 				C.x = start_x + side_2 * cos(angleRad);
-				C.y = start_y - side_2 * sin(angleRad); 
+				C.y = start_y + side_2 * sin(angleRad); 
 				POINT points[3] = { A, B, C };
 				Polygon(hdc, points, 3);
 
@@ -269,12 +231,52 @@ namespace Geometry
 				cout << typeid(*this).name() << endl;
 				cout << "Сторона 1: " << get_side_1() << endl;
 				cout << "Сторона 2: " << get_side_2() << endl;
-				cout << "Угол между сторонами : " << get_angleDeg() << endl;
 				cout << "Сторона 3 : " << get_side_3() << endl;
-				cout << "Площадь по двум сторонам и углу: " << get_area() << endl;
+				cout << "Угол между сторонами : " << get_angleDeg() << endl;
 				Shape::info();
+				Sleep(1000);
 			}
 
+	};
+	class Circle : public Shape
+	{
+		int radius;
+
+	public:
+		void set_radius(double radius)  { this-> radius = radius; }
+		int get_radius()const { return radius; }
+		double get_area() const override {return M_PI * (radius * radius);}
+		double get_perimeter()const override { return 2 * M_PI * radius; }
+
+		void draw() const override 
+		{ 
+			DRAW_SETUP(hwnd, hdc, hPen, hBrush, line_width, color)
+
+			int x = start_x - radius;
+			int y = start_y - radius;
+			int width = radius * 2;
+			int height = radius * 2;
+
+			Ellipse(hdc, x, y, x + width, y + height);
+	
+			DeleteObject(hPen);
+			DeleteObject(hBrush);
+			ReleaseDC(hwnd, hdc);
+			
+		}
+		Circle(double radius, SHAPE_TAKE_PARAMETERS):Shape(SHAPE_GIVE_PARAMETERS)
+		{
+			set_radius(radius);
+		}
+
+		void info() const override
+		{
+			cout << typeid(*this).name() << endl;
+			cout << "Радиус: " << get_radius() << endl;
+			
+			Shape::info();
+			Sleep(5000);
+		}
 	};
 	 
 
@@ -283,13 +285,15 @@ namespace Geometry
 		public:
 			Square(double side, SHAPE_TAKE_PARAMETERS) :Rectangle(side, side, SHAPE_GIVE_PARAMETERS) {}
 		};
+ 
+   
 
 }
 void main()
 {
 	setlocale(LC_ALL, "");
 
-	Geometry::Square square(50, 650, 50, 5, Geometry::Color::Red);
+	Geometry::Square square(50, 650, 50, 1, Geometry::Color::Red);
 	square.info();
 	square.draw();
 	cout << "\n";
@@ -299,12 +303,16 @@ void main()
 	rectangle.draw();
 	cout << "\n";
 	
-	Geometry::Triangle triangle(150, 200, 35,750,50, 1, Geometry::Color::Green);
+	Geometry::Triangle triangle(150, 200, 60,750,50, 1, Geometry::Color::Green);
 	triangle.info();
 	triangle.draw();
+	cout << "\n";
 
-	HWND hwnd = GetConsoleWindow();
-	InvalidateRect(hwnd, NULL, TRUE);
-	UpdateWindow(hwnd);
+	Geometry::Circle circle(50,500,150, 1, Geometry::Color::Yellow);
+	circle.info();
+	circle.draw();
+	cout << "\n";
+
 	Sleep(5000);
+	
 }
