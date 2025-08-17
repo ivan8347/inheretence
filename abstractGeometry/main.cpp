@@ -224,7 +224,6 @@ namespace Geometry
 				set_side_1(side_1);
 				set_side_2(side_2);
 				set_angleDeg(angleDeg);
-
 			}
 			void info() const override
 			{
@@ -236,7 +235,6 @@ namespace Geometry
 				Shape::info();
 				Sleep(1000);
 			}
-
 	};
 	class Circle : public Shape
 	{
@@ -262,32 +260,25 @@ namespace Geometry
 			DeleteObject(hPen);
 			DeleteObject(hBrush);
 			ReleaseDC(hwnd, hdc);
-			
 		}
 		Circle(double radius, SHAPE_TAKE_PARAMETERS):Shape(SHAPE_GIVE_PARAMETERS)
 		{
 			set_radius(radius);
 		}
-
 		void info() const override
 		{
 			cout << typeid(*this).name() << endl;
 			cout << "Радиус: " << get_radius() << endl;
-			
 			Shape::info();
 			Sleep(5000);
 		}
 	};
-	 
 
 		class Square :public Rectangle
 		{
 		public:
 			Square(double side, SHAPE_TAKE_PARAMETERS) :Rectangle(side, side, SHAPE_GIVE_PARAMETERS) {}
 		};
- 
-   
-
 }
 void main()
 {
