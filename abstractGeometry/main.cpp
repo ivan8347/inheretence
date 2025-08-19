@@ -1,291 +1,361 @@
-﻿
-#include<iostream>
+﻿#include<iostream>
 #include<Windows.h>
 #include <cmath>
+#include<gdiplus.h>
+#include <shellapi.h>
+#pragma comment(lib, "gdiplus.lib")
+
 using namespace std;
+using namespace Gdiplus;
 
+#define M_PI 3.14
 
+ULONG_PTR gdiplusToken;
+
+void InitGDIPlus() {
+    GdiplusStartupInput gdiplusStartupInput;
+    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+}
+
+void ShutdownGDIPlus() {
+    GdiplusShutdown(gdiplusToken);
+}
+
+// Функция для получения CLSID кодека
+int GetEncoderClsid(const WCHAR* format, CLSID* pClsid) {
+    UINT num = 0, size = 0;
+    GetImageEncodersSize(&num, &size);
+    if (size == 0) return -1;
+    ImageCodecInfo* pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
+    GetImageEncoders(num, size, pImageCodecInfo);
+    for (UINT i = 0; i < num; ++i) {
+        if (wcscmp(pImageCodecInfo[i].MimeType, format) == 0) {
+            *pClsid = pImageCodecInfo[i].Clsid;
+            free(pImageCodecInfo);
+            return i;
+        }
+    }
+    free(pImageCodecInfo);
+    return -1;
+}
 
 namespace Geometry
 {
-	enum Color	//Enumeration (Перечисление)
-	{
-		Red = 0x000000FF,
-		Green = 0x0000FF00,
-		Blue = 0x00FF0000,
-		Yellow = 0x0000FFFF,
-		Violet = 0x00FF00FF
-	};
+   enum Color
+    {
+        Red = 0x000000FF,
+        Green = 0x0000FF00,
+        Blue = 0x00FF0000,
+        Yellow = 0x0000FFFF,
+        Violet = 0x00FF00FF,
+      };  
+    //enum Color 
+    //{
+    //    Red    = 0xFF0000,     // красный
+    //    Green  = 0x00FF00,     // зелёный
+    //    Blue   = 0x0000FF,     // синий
+    //    Yellow = 0xFFFF00,     // жёлтый
+    //    Violet = 0x8A2BE2      // пример фиолетового цвета (можно заменить на RGB)
+    //    
+   
+    
 #define SHAPE_TAKE_PARAMETERS int start_x,int start_y,int line_width, Color color
 #define SHAPE_GIVE_PARAMETERS start_x, start_y, line_width, color
+#define FILLCOLOR  255, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF
+    class Shape
+    {
+        static const int MIN_START_X = 100;
+        static const int MIN_START_Y = 100;
+        static const int MAX_START_X = 800;
+        static const int MAX_START_Y = 600;
+        static const int MIN_LINE_WIDTH = 1;
+        static const int MAX_LINE_WIDTH = 32;
 
-	class Shape
-	{
-		static const int MIN_START_X = 100;
-		static const int MIN_START_Y = 100;
-		static const int MAX_START_X = 800;
-		static const int MAX_START_Y = 600;
-		static const int MIN_LINE_WIDTH = 1;
-		static const int MAX_LINE_WIDTH = 32;
-		static const int MIN_SIZE = 32;
-		static const int MAX_SIZE = 800;
+    protected:
+        int start_x;
+        int start_y;
+        int line_width;
+        Color color;
 
+    public:
+        void set_start_x(int start_x) {
+            this->start_x = (start_x < MIN_START_X) ? MIN_START_X :
+                (start_x > MAX_START_X) ? MAX_START_X : start_x;
+        }
+        void set_start_y(int start_y) {
+            this->start_y = (start_y < MIN_START_Y) ? MIN_START_Y :
+                (start_y > MAX_START_Y) ? MAX_START_Y : start_y;
+        }
+        void set_line_width(int line_width) {
+            this->line_width = (line_width < MIN_LINE_WIDTH) ? MIN_LINE_WIDTH :
+                (line_width > MAX_LINE_WIDTH) ? MAX_LINE_WIDTH : line_width;
+        }
+        void set_color(Color color) {
+            this->color = color;
+        }
+        double get_start_x() const { return start_x; }
+        double get_start_y() const { return start_y; }
+        double get_line_width() const { return line_width; }
+        Color get_color() const { return color; }
 
-	protected:
-	
-		int start_x;
-		int start_y;
-		int line_width;
-		Color color;	//цвет фигуры
-	public:
-		void set_start_x(int start_x)
-		{
-			this->start_x =
-				start_x < MIN_START_X ? MIN_START_X :
-				start_x > MAX_START_X ? MAX_START_X :
-				start_x;
-		}
-		void set_start_y(int start_y)
-		{
-			this->start_y =
-				start_y < MIN_START_Y ? MIN_START_Y :
-				 start_y > MAX_START_Y ? MAX_START_Y :
-				start_y;
-		}
-		void set_line_width(int line_width)
-		{
-			this->line_width =
-				line_width < MIN_LINE_WIDTH ? MIN_LINE_WIDTH :
-				line_width > MAX_LINE_WIDTH ? MAX_LINE_WIDTH :
-				line_width;
-		}
-		void set_color(Color color)
-		{
-			this->color = color;
-		}
-		double get_start_x()const
-		{
-			return start_x;
-		}
-		double get_start_y()const
-		{
-			return start_y;
-		}
-		double get_line_width()const
-		{
-			return line_width;
-		}
-		Color get_color()const
-		{
-			return color;
-		}
-		virtual double get_area()const = 0;
-		virtual double get_perimeter()const = 0;
-		virtual void draw()const = 0;
+        virtual double get_area() const = 0;
+        virtual double get_perimeter() const = 0;
+        virtual void fill(Graphics* g) const = 0;
 
-		Shape(SHAPE_TAKE_PARAMETERS) :color(color)
-		{
-			set_start_x(start_x);
-			set_start_y(start_y);
-			set_line_width(line_width);
-		}
+        Shape(SHAPE_TAKE_PARAMETERS) : color(color) {
+            set_start_x(start_x);
+            set_start_y(start_y);
+            set_line_width(line_width);
+        }
 
-		virtual void info()const
-		{
-			cout << "Площадь фигуры: " << get_area() << endl;
-			cout << "Периметр фигуры: " << get_perimeter() << endl;
-			draw();
-		}
-	};
+        virtual void info() const {
+            cout << "Площадь фигуры: " << get_area() << endl;
+            cout << "Периметр фигуры: " << get_perimeter() << endl;
+        }
+    };
 
-	/*class Square :public Shape
-	{
-		double side;
-	public:
-		void set_side(double side)
-		{
-			this->side = side;
-		}
-		double get_side()const
-		{
-			return side;
-		}
-		double get_area()const override
-		{
-			return side * side;
-		}
-		double get_perimeter()const override
-		{
-			return side * 4;
-		}
-		void draw()const override
-		{
-			for (int i = 0; i < side; i++)
-			{
-				for (int j = 0; j < side; j++)
-				{
-					cout << "* ";
-				}
-				cout << endl;
-			}
-		}
-		Square(double side, SHAPE_TAKE_PARAMETERS) :Shape(SHAPE_GIVE_PARAMETERS)
-		{
-			set_side(side);
-		}
-		void info()const override
-		{
-			cout << typeid(*this).name() << endl;
-			cout << "Квадрат" << endl;
-			cout << "Сторона квадрата: " << get_side() << endl;
-			Shape::info();
-		}
-	};*/
-	class Rectangle:public Shape
-	{
-		double side_1;
-		double side_2;
-	public:
-		void set_side_1(double side_1)
-		{
-			this->side_1 = side_1;
-		}
-		void set_side_2(double side_2)
-		{
-			this->side_2 = side_2;
-		}
-		double get_side_1()const
-		{
-			return side_1;
-		}
-		double get_side_2()const
-		{
-			return side_2;
-		}
-		double get_area()const override
-		{
-			return side_1 * side_2;
-		}
+    class Rectangle :public Shape {
+        double side_1;
+        double side_2;
+    public:
+        void set_side_1(double side_1) { this->side_1 = side_1; }
+        void set_side_2(double side_2) { this->side_2 = side_2; }
+        double get_side_1() const { return side_1; }
+        double get_side_2() const { return side_2; }
+        double get_area() const override { return side_1 * side_2; }
+        double get_perimeter() const override { return (side_1 + side_2) * 2; }
+       
+ void fill(Graphics* g) const 
+        {
+     Gdiplus::Color fillColor(FILLCOLOR);
+            SolidBrush brush(fillColor);
+            g->FillRectangle(&brush, start_x, start_y, (int)side_1, (int)side_2);
+        }
 
-		double get_perimeter()const override
-		{
-			return (side_1 + side_2) * 2;
+      /*  void draw(Graphics* g) const override 
+        {
+            Gdiplus::Color penColor(255, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
+            Pen pen(penColor, line_width);
+            g->DrawRectangle(&pen, start_x, start_y, (int)side_1, (int)side_2);
+        }
+      */ 
+        Rectangle(double side_1, double side_2, SHAPE_TAKE_PARAMETERS)
+            :Shape(SHAPE_GIVE_PARAMETERS) {
+            set_side_1(side_1);
+            set_side_2(side_2);
+        }
 
-		}
-		void draw()const override
-		{//получаем окно консоли
-			HWND hwnd = GetConsoleWindow();
-		//получаем на чем будем рисовать
-			HDC hdc = GetDC(hwnd);
-		// сoздаем карандаш
-			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(color);
-			SelectObject(hdc, hPen);
-			SelectObject(hdc, hBrush);
+        void info() const override {
+            cout << "Rectangle:" << endl;
+            cout << "Сторона 1: " << get_side_1() << endl;
+            cout << "Сторона 2: " << get_side_2() << endl;
+            Shape::info();
+            //Sleep(1000);
+        }
+    };
 
-			::Rectangle(hdc, start_x, start_y, start_x + side_1, start_y + side_2);
+    class Triangle :public Shape {
+        double side_1;
+        double side_2;
+        double angleDeg; // угол между сторонами в градусах
+
+    public:
+        void set_side_1(double side_1) { this->side_1 = side_1; }
+        void set_side_2(double side_2) { this->side_2 = side_2; }
+        void set_angleDeg(double angleDeg) { this->angleDeg = angleDeg; }
+
+        double get_side_1() const { return side_1; }
+        double get_side_2() const { return side_2; }
+        double get_angleDeg() const { return angleDeg; }
+
+        double get_side_3() const {
+            return sqrt(pow(side_1, 2) + pow(side_2, 2) - 2 * side_1 * side_2 * cos(angleDeg * M_PI / 180));
+        }
+
+        double get_area() const override {
+            double angleRad = angleDeg * M_PI / 180;
+            return 0.5 * side_1 * side_2 * sin(angleRad);
+        }
+
+        double get_perimeter() const override {
+            return side_1 + side_2 + get_side_3();
+        }
 
 
+        void fill(Graphics* g) const 
+        {
+            Gdiplus::Color fillColor(FILLCOLOR);
+            SolidBrush brush(fillColor);
+            PointF points[3];
+            points[0] = PointF(start_x, start_y);
+            points[1] = PointF(start_x + side_1, start_y);
+            double angleRad = get_angleDeg() * M_PI / 180;
+            points[2] = PointF(start_x + side_2 * cos(angleRad),
+                               start_y + side_2 * sin(angleRad));
+            g->FillPolygon(&brush, points, 3);
+        }
+      /* void fill(Graphics* g) const
+       {
+           Gdiplus::Color fillColor(FILLCOLOR);
+           SolidBrush brush(fillColor); 
+           Gdiplus::PointF points[3];
+           PointF A = { start_x, start_y };
+           PointF B = { start_x + side_1, start_y };
+           double angleRad = get_angleDeg() * M_PI / 180;
+           PointF C;
+           C.x = start_x + side_2 * cos(angleRad);
+           C.y = start_y + side_2 * sin(angleRad);
+           PointF points[3] = { A, B, C };
+           g->FillPolygon(&brush, points,3);
+       }
+      */  //void draw(Graphics* g) const 
+        //{
+        //    Gdiplus::Color fillColor(color);
+        //   
+        //    // Точки треугольника
+        //    REAL A_x = start_x;
+        //    REAL A_y = start_y;
+        //    REAL B_x = start_x + (REAL)side_1;
+        //    REAL B_y = start_y;
 
-		// удаляем карандаш
-			DeleteObject(hPen);
-			DeleteObject(hBrush);
-			ReleaseDC(hwnd, hdc);
+        //    double angleRad = get_angleDeg() * M_PI / 180;
+        //    REAL C_x = start_x + (REAL)(side_2 * cos(angleRad));
+        //    REAL C_y = start_y + (REAL)(side_2 * sin(angleRad));
 
-			
-		}
-		Rectangle(double side_1, double side_2, SHAPE_TAKE_PARAMETERS) :Shape(SHAPE_GIVE_PARAMETERS)
-		{
-			set_side_1(side_1);
-			set_side_2(side_2);
-		}
+        //    PointF points[3] =
+        //    {
+        //        PointF(A_x, A_y),
+        //        PointF(B_x, B_y),
+        //        PointF(C_x, C_y)
+        //    };
 
-		void info()const override
-		{
-			cout << typeid(*this).name() << endl;
-			cout << "Сторона 1: " << get_side_1() << endl;
-			cout << "Сторона 2: " << get_side_2() << endl;
-			Shape::info();
-		}
-	};
-	class Triangle :public Shape
-	{
-		double side_1;
-		double side_2;
-		double height;
-	public:
-		void set_side_1(double side_1) { this->side_1 = side_1;}
-		void set_side_2(double side_2) { this->side_2 = side_2;}
-		void set_height(double height) { this->height = height;}
-		double get_side_1()const {return side_1;}
-		double get_side_2()const {return side_2;}
-		double get_height()const { return height;}
-		double get_side_3()const { return sqrt(pow(side_1 / 2.0, 2) + pow(height, 2));}
+        //    Gdiplus::Color penColor(color);
+        //    Pen pen(penColor, line_width); 
 
-		double get_area()const override { return (side_1 * height) / 2;}
-		double get_perimeter()const override {return side_1 + side_2 + get_side_3();}
+        //    g->DrawPolygon(&pen, points, 3);
+        //}
 
+        Triangle(double side_1, double side_2, double angleDeg, SHAPE_TAKE_PARAMETERS)
+            :Shape(SHAPE_GIVE_PARAMETERS) 
+            
+        {
+            set_side_1(side_1);
+            set_side_2(side_2);
+            set_angleDeg(angleDeg);
+        }
 
-		void draw()const override
-		{
-			HWND hwnd = GetConsoleWindow();
-			HDC hdc = GetDC(hwnd);
-			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(color);
-			SelectObject(hdc, hPen);
-			SelectObject(hdc, hBrush);
-			POINT A = { start_x, start_y };
-			POINT B = { start_x + side_1, start_y };
-			POINT C;
-			C.x = start_x + side_2;
-			C.y = start_y + height; 
+        void info() const override 
+        {
+            cout << "Triangle:" << endl;
+            cout << "Сторона 1: " << get_side_1() << endl;
+            cout << "Сторона 2: " << get_side_2() << endl;
+            cout << "Сторона 3 : " << get_side_3() << endl;
+            cout << "Угол между сторонами : " << get_angleDeg() << endl;
+            Shape::info();
+           // Sleep(1000);
+        }
+    };
 
-			POINT points[3] = { A, B, C };
-			Polygon(hdc, points, 3); 
-			
+    class Circle : public Shape {
+        int radius;
+    public:
+        void set_radius(double radius) { this->radius = radius; }
+        int get_radius() const { return radius; }
+        double get_area() const override { return M_PI * (radius * radius); }
+        double get_perimeter() const override { return 2 * M_PI * radius; }
+        void fill(Graphics* g) const
+        {
+            Gdiplus::Color fillColor(FILLCOLOR);
+            SolidBrush brush(fillColor);
+            int x = start_x - radius;
+            int y = start_y - radius;
+            g->FillEllipse(&brush, x, y, radius * 2, radius * 2);
+        }
+       // void draw(Graphics* g) const  
+       // {
+       //     Gdiplus::Color penColor(255, (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
+       //     Pen pen(penColor, line_width);
+       //     int x = start_x - radius;
+       //     int y = start_y - radius;
+       //
+       //     g->DrawEllipse(&pen, x, y, radius * 2, radius * 2);
+       // }
 
-			DeleteObject(hPen);
-			DeleteObject(hBrush);
-			ReleaseDC(hwnd, hdc);
-		}
-		Triangle(double side_1, double side_2, double height, SHAPE_TAKE_PARAMETERS)
-			:Shape(SHAPE_GIVE_PARAMETERS)
-		{
-			set_side_1(side_1);
-			set_side_2(side_2);
-			set_height(height);
-		}
-		void info()const override
-		{
-			cout << typeid(*this).name() << endl;
-			cout << "Сторона 1: " << get_side_1() << endl;
-			cout << "Сторона 2: " << get_side_2() << endl;
-			cout << "Сторона 3: " << get_side_3() << endl;
-			cout << "Высота: " << get_height() << endl;
-			Shape::info();
-		}
-	};
+        Circle(double radius, SHAPE_TAKE_PARAMETERS) :Shape(SHAPE_GIVE_PARAMETERS) {
+            set_radius(radius);
+        }
 
-		class Square :public Rectangle
-		{
-		public:
-			Square(double side, SHAPE_TAKE_PARAMETERS) :Rectangle(side, side, SHAPE_GIVE_PARAMETERS) {}
-		};
+        void info() const override {
+            cout << "Circle:" << endl;
+            cout << "Радиус: " << get_radius() << endl;
+            Shape::info();
+            //Sleep(5000);
+        }
+    };
 
+    class Square :public Rectangle {
+    public:
+        Square(double side, SHAPE_TAKE_PARAMETERS)
+            :Rectangle(side, side, SHAPE_GIVE_PARAMETERS) {
+        }
+    };
 }
-void main()
+
+   void main()
 {
-	setlocale(LC_ALL, "");
+    setlocale(LC_ALL, "");
 
-	//Geometry::Square square(50, 900, 100, 5, Geometry::Color::Red);
-	//square.info();
-	//cout << "\n";
-	//
-	//Geometry::Rectangle rectangle(200, 150, 550, 100, 1, Geometry::Color::Blue);
-	//rectangle.info();
-	//cout << "\n";
+    // Инициализация GDI+
+    InitGDIPlus();
 
-	Geometry::Triangle triangle(200, 300, 60,100,100, 1, Geometry::Color::Green);
-	triangle.info();
+    const int width = 800;
+    const int height = 600;
 
+    // Создаем Bitmap и Graphics для рисования
+    Bitmap* pBitmap = new Bitmap(width, height, PixelFormat32bppARGB);
+    Graphics* g = Graphics::FromImage(pBitmap);
+    g->Clear(Color(255, 255, 255, 255)); // белый фон
+
+    // Создаем фигуры
+    Geometry::Square square(50, 50, 50, 1, Geometry::Color::Red);
+    square.info();
+    square.fill(g);
+    //square.draw(g);
+    cout << "\n";
+
+    Geometry::Rectangle rect(50, 100, 200, 50, 1, Geometry::Color::Blue);
+    rect.info();
+    rect.fill(g);
+    //rect.draw(g);
+    cout << "\n";
+
+    Geometry::Triangle tri(50, 100, 60, 300, 50, 1, Geometry::Color::Green);
+    tri.info();
+    tri.fill(g);
+    //tri.draw(g);
+    cout << "\n";
+
+    Geometry::Circle circle(50, 450, 150, 1, Geometry::Color::Yellow);
+    circle.info();
+    circle.fill(g);
+    //circle.draw(g);
+    cout << "\n";
+
+    // Сохраняем изображение
+    wchar_t filename[] = L"output.png";
+    CLSID pngClsid;
+    GetEncoderClsid(L"image/png", &pngClsid);
+    pBitmap->Save(filename, &pngClsid, NULL);
+
+    // Освобождаем ресурсы
+    delete g;
+    delete pBitmap;
+
+    // Открываем файл в Paint
+    ShellExecute(NULL, L"open", filename, NULL, NULL, SW_SHOW);
+
+    // Завершаем работу GDI+
+    ShutdownGDIPlus();
+
+    
 }
