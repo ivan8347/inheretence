@@ -272,6 +272,93 @@ namespace Geometry
 			Shape::info();
 			Sleep(5000);
 		}
+	}; 
+	class Romb :public Shape
+	{
+		double side_1;
+		double side_2; 
+		double angleDeg;
+	public:
+		void set_side_1(double side_1) { this -> side_1 = side_1; }
+		void set_side_2( double side_2) { this->side_2 = side_2; }
+		void set_angleDeg(double angleDeg) { this-> angleDeg = angleDeg; }
+
+		double get_side_1()const { return side_1; }
+		double get_side_2()const { return side_2; }
+		double get_angleDeg()const { return angleDeg; }
+		double get_side_3() const
+		{
+			return sqrt(pow(side_1, 2) + pow(side_1, 2) - 2 * side_1 * side_1 * cos(angleDeg * M_PI / 180));
+		}
+
+		int height_1 = (2 * get_area()) / get_side_3();
+		int height_2 = sqrt(pow(side_2, 2) + pow(get_side_3() / 2, 2));
+		double  get_area()const override
+		{
+			double angleRad = angleDeg * M_PI / 180;
+			return (side_1* side_1  * sin(angleRad)) *2;
+		}
+		double  get_area_2()const 
+		{
+			double angleRad = angleDeg * M_PI / 180;
+			return side_2*height_2/2;
+		}
+		double get_perimeter()const override { return side_1 * 4; }
+
+		void draw() const override
+		{
+			DRAW_SETUP(hwnd, hdc, hPen, hBrush, line_width, color)
+
+				//int height_1 = (2 * get_area()) / get_side_3();
+			    //int height_2 = sqrt(pow(side_2, 2) + pow(get_side_3() /2, 2));
+                POINT A = { start_x, start_y };
+				POINT B = { start_x + (get_side_3() / 2 ),start_y + height_1 };
+				POINT C = { start_x - (get_side_3() /2),start_y + height_1 + height_2 };
+				POINT D = { start_x + (get_side_3() / 2),start_x - height_2 };
+
+				POINT points[4] = { A, B, C };
+				Polygon(hdc, points, 4); 
+
+
+
+		  
+			/*POINT B = {start_x + side_1, start_y};
+			double angleRad = get_angleDeg() * M_PI / 180;
+			POINT C;
+			C.x = start_x + side_1* cos(angleRad);
+			C.y = start_y + side_1* sin(angleRad);
+			POINT D;
+			D.x = start_x + side_1 * cos(angleRad);
+			D.y = start_y - side_1 * sin(angleRad);
+			POINT points[4] = { A, B, C, D };
+			Polygon(hdc, points, 4);*/
+
+			DeleteObject(hPen);
+			DeleteObject(hBrush);
+			ReleaseDC(hwnd, hdc);
+
+
+
+		}
+
+		Romb(double side_1, double side_2, double angleDeg, SHAPE_TAKE_PARAMETERS) :Shape(SHAPE_GIVE_PARAMETERS)
+		{
+			set_side_1(side_1);
+			set_angleDeg(angleDeg);
+			set_side_2(side_2);
+		}
+
+
+		void info() const override
+		{
+			cout << typeid(*this).name() << endl;
+			cout << "Сторона 1: " << get_side_1() << endl;
+			cout << "Угол между сторонами : " << get_angleDeg() << endl;
+			Shape::info();
+			Sleep(1000);
+		}
+
+
 	};
 
 		class Square :public Rectangle
@@ -284,24 +371,29 @@ void main()
 {
 	setlocale(LC_ALL, "");
 
-	Geometry::Square square(50, 650, 50, 1, Geometry::Color::Red);
-	square.info();
-	square.draw();
-	cout << "\n";
-	
-	Geometry::Rectangle rectangle(200, 150, 750, 50, 1, Geometry::Color::Blue);
-	rectangle.info();
-	rectangle.draw();
-	cout << "\n";
-	
-	Geometry::Triangle triangle(150, 200, 60,750,50, 1, Geometry::Color::Green);
-	triangle.info();
-	triangle.draw();
-	cout << "\n";
+	//Geometry::Square square(50, 650, 50, 1, Geometry::Color::Red);
+	//square.info();
+	//square.draw();
+	//cout << "\n";
+	//
+	//Geometry::Rectangle rectangle(200, 150, 750, 50, 1, Geometry::Color::Blue);
+	//rectangle.info();
+	//rectangle.draw();
+	//cout << "\n";
+	//
+	//Geometry::Triangle triangle(150, 200, 60,750,50, 1, Geometry::Color::Green);
+	//triangle.info();
+	//triangle.draw();
+	//cout << "\n";
+	//
+	//Geometry::Circle circle(50,500,150, 1, Geometry::Color::Yellow);
+	//circle.info();
+	//circle.draw();
+	//cout << "\n";
 
-	Geometry::Circle circle(50,500,150, 1, Geometry::Color::Yellow);
-	circle.info();
-	circle.draw();
+	Geometry::Romb romb(20,50, 60,650, 300, 1, Geometry::Color::Red);
+	romb.info();
+	romb.draw();
 	cout << "\n";
 
 	Sleep(5000);
