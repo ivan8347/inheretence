@@ -173,69 +173,87 @@ namespace Geometry
 
 
 
-	class Triangle :public Shape
-	{
-			double side_1;
-			double side_2;
-			double angleDeg; // угол между сторонами в градусах
+	class Triangle :public Shape {
+		double side_1;
+		double side_2;
+		double angleDeg; // угол между сторонами в градусах
 
-		public:
-			void set_side_1(double side_1) { this->side_1 = side_1; }
-			void set_side_2(double side_2) { this->side_2 = side_2; }
-			void set_angleDeg(double angleDeg) { this->angleDeg = angleDeg; }
+	public:
+		void set_side_1(double side_1) { this->side_1 = side_1; }
+		void set_side_2(double side_2) { this->side_2 = side_2; }
+		void set_angleDeg(double angleDeg) { this->angleDeg = angleDeg; }
 
-			double get_side_1() const { return side_1; }
-			double get_side_2() const { return side_2; }
-			double get_angleDeg() const { return angleDeg; }
+		double get_side_1() const { return side_1; }
+		double get_side_2() const { return side_2; }
+		double get_angleDeg() const { return angleDeg; }
 
-			// Метод для вычисления площади по двум сторонам и углу
-			double get_area() const override
+		double get_side_3() const
+		{
+			//double angleRad = angleDeg * M_PI / 180;
+			return sqrt((side_1 * side_1) + (side_2 * side_2) - 2 * side_1 * side_2 * cos(angleDeg * M_PI / 180));
+		}
+
+		double get_area() const override {
+			//double angleRad = angleDeg * M_PI / 180;
+			return 0.5 * side_1 * side_2 * sin(angleDeg * M_PI / 180);
+		}
+
+
+		double get_perimeter() const override {
+			// double side_3 = get_side_3();
+			return side_1 + side_2 + get_side_3();
+		}
+
+
+		
+		void draw() const override
+		{
+			DRAW_SETUP(hwnd, hdc, hPen, hBrush, line_width, color)
+
+			double side_3 = get_side_3();
+			double height = (2 * get_area()) / side_3;
+			double angleRad = angleDeg * M_PI / 180;
+
+			
+
+
+			POINT A = { start_x, start_y };
+			POINT B = { start_x + side_1 * cos(angleRad), start_y + height };
+			POINT C = { start_x + side_3, start_y };
+
+			POINT points[3] = { A, B, C };
+			Polygon(hdc, points, 3);
+			DeleteObject(hPen);
+			DeleteObject(hBrush);
+			ReleaseDC(hwnd, hdc);
+		}
+
+		Triangle(double side_1, double side_2, double angleDeg, SHAPE_TAKE_PARAMETERS)
+			:Shape(SHAPE_GIVE_PARAMETERS)
+
+		{
+			set_side_1(side_1);
+			set_side_2(side_2);
+			set_angleDeg(angleDeg);
+		}
+
+		void info() const override
+		{
+			if (side_1 + side_2 <= get_side_3() || side_1 + get_side_3() <= side_2 || side_2 + get_side_3() <= side_1)
 			{
-				double angleRad = angleDeg * M_PI / 180;
-				return 0.5 * side_1 * side_2 * sin(angleRad);
+				std::cout << "Треугольник с такими сторонами не существует." << std::endl;
+				// return 1;
 			}
-
-			double get_side_3() const
-			{
-				return sqrt(pow(side_1, 2) + pow(side_2, 2) - 2 * side_1 * side_2 * cos(angleDeg * M_PI / 180));
-			}
-			double get_perimeter()const override { return side_1 + side_2 + get_side_3();}
-
-			void draw() const override
-			{
-				DRAW_SETUP(hwnd, hdc, hPen, hBrush, line_width, color)
-				POINT A = { start_x, start_y };
-				POINT B = { start_x + side_1, start_y };
-				double angleRad = get_angleDeg() * M_PI / 180;
-				POINT C;
-				C.x = start_x + side_2 * cos(angleRad);
-				C.y = start_y + side_2 * sin(angleRad); 
-				POINT points[3] = { A, B, C };
-				Polygon(hdc, points, 3);
-
-				DeleteObject(hPen);
-				DeleteObject(hBrush);
-				ReleaseDC(hwnd, hdc);
-			}
-
-			Triangle(double side_1, double side_2, double angleDeg, SHAPE_TAKE_PARAMETERS)
-				:Shape(SHAPE_GIVE_PARAMETERS)
-			{
-				set_side_1(side_1);
-				set_side_2(side_2);
-				set_angleDeg(angleDeg);
-			}
-			void info() const override
-			{
-				cout << typeid(*this).name() << endl;
-				cout << "Сторона 1: " << get_side_1() << endl;
-				cout << "Сторона 2: " << get_side_2() << endl;
-				cout << "Сторона 3 : " << get_side_3() << endl;
-				cout << "Угол между сторонами : " << get_angleDeg() << endl;
-				Shape::info();
-				Sleep(1000);
-			}
+			cout << "Triangle:" << endl;
+			cout << "Сторона 1: " << get_side_1() << endl;
+			cout << "Сторона 2: " << get_side_2() << endl;
+			cout << "Сторона 3 : " << get_side_3() << endl;
+			cout << "Угол между сторонами : " << get_angleDeg() << endl;
+			Shape::info();
+			 Sleep(1000);
+		}
 	};
+
 	class Circle : public Shape
 	{
 		int radius;
@@ -313,10 +331,10 @@ namespace Geometry
 			    //int height_2 = sqrt(pow(side_2, 2) + pow(get_side_3() /2, 2));
                 POINT A = { start_x, start_y };
 				POINT B = { start_x + (get_side_3() / 2 ),start_y + height_1 };
-				POINT C = { start_x - (get_side_3() /2),start_y + height_1 + height_2 };
+				POINT C = { start_x - (get_side_3() ),start_y + height_1  };
 				POINT D = { start_x + (get_side_3() / 2),start_x - height_2 };
 
-				POINT points[4] = { A, B, C };
+				POINT points[4] = { A, B, C, D };
 				Polygon(hdc, points, 4); 
 
 
@@ -381,11 +399,11 @@ void main()
 	//rectangle.draw();
 	//cout << "\n";
 	//
-	//Geometry::Triangle triangle(150, 200, 60,750,50, 1, Geometry::Color::Green);
-	//triangle.info();
-	//triangle.draw();
-	//cout << "\n";
-	//
+	Geometry::Triangle triangle(150, 200, 60,750,50, 1, Geometry::Color::Green);
+	triangle.info();
+	triangle.draw();
+	cout << "\n";
+	
 	//Geometry::Circle circle(50,500,150, 1, Geometry::Color::Yellow);
 	//circle.info();
 	//circle.draw();
