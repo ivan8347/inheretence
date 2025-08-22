@@ -7,7 +7,9 @@
 
 using namespace std;
 using namespace Gdiplus;
-
+using std::cin;
+using std::cout;
+using std::endl;
 #define M_PI 3.14
 
 ULONG_PTR gdiplusToken;
@@ -41,13 +43,15 @@ int GetEncoderClsid(const WCHAR* format, CLSID* pClsid) {
 
 namespace Geometry
 {
+
    enum Color
     {
         Red = 0x000000FF,
         Green = 0x0000FF00,
         Blue = 0x00FF0000,
-        Yellow = 0x0000FFFF,
+        Yellow = 0xFFFF00,
         Violet = 0x00FF00FF,
+        Black = 0x000000FF
       };  
     //enum Color 
     //{
@@ -168,16 +172,20 @@ namespace Geometry
         double get_side_2() const { return side_2; }
         double get_angleDeg() const { return angleDeg; }
 
-        double get_side_3() const {
-            return sqrt(pow(side_1, 2) + pow(side_2, 2) - 2 * side_1 * side_2 * cos(angleDeg * M_PI / 180));
+        double get_side_3() const 
+        {
+            //double angleRad = angleDeg * M_PI / 180;
+            return sqrt((side_1 * side_1) + (side_2 * side_2) - 2 * side_1 * side_2 * cos(angleDeg * M_PI / 180));
         }
 
         double get_area() const override {
-            double angleRad = angleDeg * M_PI / 180;
-            return 0.5 * side_1 * side_2 * sin(angleRad);
+            //double angleRad = angleDeg * M_PI / 180;
+            return 0.5 * side_1 * side_2 * sin(angleDeg * M_PI / 180);
         }
+        
 
         double get_perimeter() const override {
+           // double side_3 = get_side_3();
             return side_1 + side_2 + get_side_3();
         }
 
@@ -186,54 +194,41 @@ namespace Geometry
         {
             Gdiplus::Color fillColor(FILLCOLOR);
             SolidBrush brush(fillColor);
+
+            double side_3 = get_side_3();
+          double height = (2 * get_area()) / side_3;
+            double angleRad = angleDeg * M_PI / 180;
+           
             PointF points[3];
+
+
             points[0] = PointF(start_x, start_y);
-            points[1] = PointF(start_x + side_1, start_y);
-            double angleRad = get_angleDeg() * M_PI / 180;
-            points[2] = PointF(start_x + side_2 * cos(angleRad),
-                               start_y + side_2 * sin(angleRad));
+            points[1] = PointF(start_x + side_1 * cos(angleRad), start_y + height);
+            points[2] = PointF(start_x + side_3, start_y );
+                              
             g->FillPolygon(&brush, points, 3);
         }
-      /* void fill(Graphics* g) const
-       {
-           Gdiplus::Color fillColor(FILLCOLOR);
-           SolidBrush brush(fillColor); 
-           Gdiplus::PointF points[3];
-           PointF A = { start_x, start_y };
-           PointF B = { start_x + side_1, start_y };
-           double angleRad = get_angleDeg() * M_PI / 180;
-           PointF C;
-           C.x = start_x + side_2 * cos(angleRad);
-           C.y = start_y + side_2 * sin(angleRad);
-           PointF points[3] = { A, B, C };
-           g->FillPolygon(&brush, points,3);
-       }
-      */  //void draw(Graphics* g) const 
-        //{
-        //    Gdiplus::Color fillColor(color);
-        //   
-        //    // Точки треугольника
-        //    REAL A_x = start_x;
-        //    REAL A_y = start_y;
-        //    REAL B_x = start_x + (REAL)side_1;
-        //    REAL B_y = start_y;
+      
+        void draw(Graphics* g) const 
+        {
+            double side_3 = get_side_3();
+            double height = (2 * get_area()) / side_3;
+            double angleRad = angleDeg * M_PI / 180;
 
-        //    double angleRad = get_angleDeg() * M_PI / 180;
-        //    REAL C_x = start_x + (REAL)(side_2 * cos(angleRad));
-        //    REAL C_y = start_y + (REAL)(side_2 * sin(angleRad));
+            PointF points[3];
 
-        //    PointF points[3] =
-        //    {
-        //        PointF(A_x, A_y),
-        //        PointF(B_x, B_y),
-        //        PointF(C_x, C_y)
-        //    };
 
-        //    Gdiplus::Color penColor(color);
-        //    Pen pen(penColor, line_width); 
+            points[0] = PointF(start_x, start_y);
+            points[1] = PointF(start_x + side_1 * cos(angleRad), start_y + height);
+            points[2] = PointF(start_x + side_3, start_y);
 
-        //    g->DrawPolygon(&pen, points, 3);
-        //}
+            Gdiplus::Color penColor(255, 0, 0, 0);
+
+
+            Pen pen(penColor, line_width); 
+
+            g->DrawPolygon(&pen, points, 3);
+        }
 
         Triangle(double side_1, double side_2, double angleDeg, SHAPE_TAKE_PARAMETERS)
             :Shape(SHAPE_GIVE_PARAMETERS) 
@@ -246,6 +241,11 @@ namespace Geometry
 
         void info() const override 
         {
+            if (side_1 + side_2 <= get_side_3() || side_1 + get_side_3 ()<= side_2 || side_2 + get_side_3() <= side_1) 
+            {
+                std::cout << "Треугольник с такими сторонами не существует." << std::endl;
+               // return 1;
+            }
             cout << "Triangle:" << endl;
             cout << "Сторона 1: " << get_side_1() << endl;
             cout << "Сторона 2: " << get_side_2() << endl;
@@ -292,6 +292,124 @@ namespace Geometry
             //Sleep(5000);
         }
     };
+    class Romb :public Shape
+    {
+        double side_1;
+        double side_2;
+        double angleDeg;
+
+    public:
+  
+        void set_side_1(double side_1) { this->side_1 = side_1; }
+        void set_side_2(double side_2) { this->side_2 = side_2; }
+        void set_angleDeg(double angleDeg) { this->angleDeg = angleDeg; }
+        
+        double get_side_1()const { return side_1; }
+        double get_side_2()const { return side_2; }
+        double get_angleDeg()const { return angleDeg; }
+       // double side_3 = get_side_3();
+        //double get_side_3() const
+        //{
+        //    //double angleRad = angleDeg * M_PI / 180.0;
+        //    return sqrt(pow(side_1, 2) + pow(side_1, 2) - 2 * side_1 * side_1 * cos(angleDeg * M_PI / 180));
+        //}
+        //
+        double get_side_3() const
+        {
+            double angleRad = angleDeg * M_PI / 180;
+            return sqrt((side_1 * side_1) + (side_1 * side_1) - 2 * side_1 * side_1 * cos(angleRad));
+        }
+
+        double get_area_1() const
+        {
+            return 0.5 * side_1 * side_2 * sin(angleDeg * M_PI / 180);
+            //double angleRad = angleDeg * M_PI / 180.0;
+            //return 0.5 * side_1 * side_1 * sin(angleRad); 
+        }
+        double get_area_2() const
+        {
+          // double side_3 = get_side_3();
+           double s = (side_2 + side_2 + get_side_3()) / 2;
+           return  sqrt(s * (s - side_2) * (s - side_2) * (s - get_side_3()));
+
+        }
+        double get_perimeter()const override { return (side_1 + side_2) * 2; }
+  
+        // Основная площадь
+        double get_area() const override {return  get_area_1() + get_area_2();  }
+        double get_height_1() const { (2 * get_area_1()) / get_side_3(); }
+        double get_height_2() const { (2 * get_area_2()) / get_side_3(); }
+        // Расчет координат вершин
+        void fill(Graphics* g) const {
+            Gdiplus::Color fillColor(FILLCOLOR);
+            SolidBrush brush(fillColor);
+            double side_3 = get_side_3();
+            double height_1 = (2 * get_area_1()) / side_3;
+            double height_2 = (2 * get_area_2()) / side_3;
+
+            PointF points[4];
+            points[0] = PointF(start_x, start_y);
+            points[1] = PointF(start_x + side_3 / 2, start_y + height_1);
+            
+            points[2] = PointF(start_x + side_3, start_y);
+            points[3] = PointF(start_x + side_3/2, start_y - height_2);
+      
+            
+          
+            
+            g->FillPolygon(&brush, points, 4);
+        }
+        void draw(Graphics* g) const
+        {
+
+            double side_3 = get_side_3();
+            double height_1 = (2 * get_area_1()) / side_3;
+            double height_2 = (2 * get_area_2()) / side_3;
+
+            Gdiplus::Color fillColor(FILLCOLOR);
+            SolidBrush brush(fillColor);
+            PointF points[4];
+            points[0] = PointF(start_x, start_y);
+            points[1] = PointF(start_x + side_3 / 2, start_y + height_1);
+
+            points[2] = PointF(start_x + side_3, start_y);
+            points[3] = PointF(start_x + side_3 / 2, start_y - height_2);
+
+           
+           
+            Gdiplus::Color penColor(255, 0, 0, 0);
+            Pen pen(penColor, line_width);
+           
+            g->DrawPolygon(&pen, points, 4);
+        }
+
+        Romb(double side_1, double side_2, double angleDeg ,SHAPE_TAKE_PARAMETERS)
+            :Shape(SHAPE_GIVE_PARAMETERS)
+        {
+            set_side_1(side_1);
+            set_side_2(side_2);
+            set_angleDeg(angleDeg);
+        }
+
+        void info() const override 
+        {
+            double side_3 = get_side_3();
+            double height_1 = (2 * get_area_1()) / side_3;
+            double height_2 = (2 * get_area_2()) / side_3;
+            cout << "Romb:" << endl;
+            cout << "Сторона 1: " << get_side_1() << endl;
+            cout << "Сторона 2: " << get_side_2() << endl;
+            cout << "Сторона 3: " << get_side_3() << endl;
+            cout << "Угол: " << get_angleDeg() << endl;
+            cout << "Высота 1: " << height_1 << endl;
+            cout << "Высота 2: " << height_2 << endl;
+            cout << "Высота 2: " << get_area_2() << endl;
+            Shape::info();
+        }
+    };
+
+    
+
 
     class Square :public Rectangle {
     public:
@@ -316,36 +434,42 @@ namespace Geometry
     Graphics* g = Graphics::FromImage(pBitmap);
     g->Clear(Color(255, 255, 255, 255)); // белый фон
 
-    // Создаем фигуры
+     
     Geometry::Square square(50, 50, 50, 1, Geometry::Color::Red);
     square.info();
     square.fill(g);
     //square.draw(g);
     cout << "\n";
-
+   
     Geometry::Rectangle rect(50, 100, 200, 50, 1, Geometry::Color::Blue);
     rect.info();
     rect.fill(g);
     //rect.draw(g);
     cout << "\n";
-
-    Geometry::Triangle tri(50, 100, 60, 300, 50, 1, Geometry::Color::Green);
-    tri.info();
-    tri.fill(g);
-    //tri.draw(g);
+   
+    Geometry::Triangle triangle(100, 150, 20, 300, 50, 1, Geometry::Color::Green);
+    triangle.info();
+    triangle.fill(g);
+    triangle.draw(g);
     cout << "\n";
-
-    Geometry::Circle circle(50, 450, 150, 1, Geometry::Color::Yellow);
-    circle.info();
-    circle.fill(g);
+   
+     Geometry::Circle circle(50, 450, 150, 1, Geometry::Color::Yellow);
+     circle.info();
+     circle.fill(g);
     //circle.draw(g);
     cout << "\n";
 
+     Geometry::Romb romb(150, 50, 60, 550,150, 10, Geometry::Color::Violet);
+     romb.info();
+     romb.fill(g);
+     romb.draw(g);
+     cout << "\n";
     // Сохраняем изображение
     wchar_t filename[] = L"output.png";
     CLSID pngClsid;
     GetEncoderClsid(L"image/png", &pngClsid);
     pBitmap->Save(filename, &pngClsid, NULL);
+
 
     // Освобождаем ресурсы
     delete g;
