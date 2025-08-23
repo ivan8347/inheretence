@@ -389,31 +389,36 @@ void main()
 {
 	setlocale(LC_ALL, "");
 
-	//Geometry::Square square(50, 650, 50, 1, Geometry::Color::Red);
-	//square.info();
-	//square.draw();
-	//cout << "\n";
-	//
-	//Geometry::Rectangle rectangle(200, 150, 750, 50, 1, Geometry::Color::Blue);
-	//rectangle.info();
-	//rectangle.draw();
-	//cout << "\n";
-	//
-	Geometry::Triangle triangle(150, 200, 60,750,50, 1, Geometry::Color::Green);
-	triangle.info();
-	triangle.draw();
+	Geometry::Square square(50, 650, 50, 1, Geometry::Color::Red);
+	square.info();
 	cout << "\n";
 	
-	//Geometry::Circle circle(50,500,150, 1, Geometry::Color::Yellow);
-	//circle.info();
-	//circle.draw();
-	//cout << "\n";
+	Geometry::Rectangle rectangle(200, 150, 750, 50, 1, Geometry::Color::Blue);
+	rectangle.info();
+	cout << "\n";
+	
+	Geometry::Triangle triangle(150, 200, 60,750,50, 1, Geometry::Color::Green);
+	triangle.info();
+	
+	cout << "\n";
+	
+	Geometry::Circle circle(50,500,150, 1, Geometry::Color::Yellow);
+	circle.info();
+	
+	cout << "\n";
 
 	Geometry::Romb romb(20,50, 60,650, 300, 1, Geometry::Color::Red);
 	romb.info();
-	romb.draw();
+	
 	cout << "\n";
-
+	while (true)
+	{
+	triangle.draw();
+		romb.draw();
+	  square.draw();
+	  circle.draw();
+	rectangle.draw();
+	}
 	Sleep(5000);
 	
 }
